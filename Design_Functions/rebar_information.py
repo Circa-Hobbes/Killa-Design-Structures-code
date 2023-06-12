@@ -44,11 +44,3 @@ def shear_legs(rebar_count):
 #takes int and returns int.
 def rebar_area_provided(dia_area_calc, rebar_count):
     return math.floor(dia_area_calc * rebar_count)
-
-def flexural_rebar_check(rebar_area_provided, rebar_area_required):
-    rebar_area_required = 1234
-    for i in dia_list:
-        if rebar_area_provided(dia_area_calc(i), rebar_count(400)) > rebar_area_required:
-            return f'{rebar_count(400)}T{i}'
-        else:
-            return 
