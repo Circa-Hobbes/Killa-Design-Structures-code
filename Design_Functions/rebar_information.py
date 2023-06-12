@@ -45,8 +45,6 @@ def shear_legs(rebar_count):
 def rebar_area_provided(dia_area_calc, rebar_count):
     return math.floor(dia_area_calc * rebar_count)
 
-#create a function which takes a required area of rebar and checks if the provided rebar is greater than it. 
-#if it reaches the end of the list, then it prints 'another layer required', and multiplies provided rebar area by 2.
 def flexural_rebar_check(rebar_area_provided, rebar_area_required):
     rebar_area_required = 1234
     for i in dia_list:
