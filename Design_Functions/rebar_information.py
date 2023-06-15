@@ -1,12 +1,7 @@
 import math
-dia_list = [16, 20, 25, 32]
+import numpy as np
 shear_dia_list = [12, 16, 20, 25]
 shear_spacing_list = [100, 150, 200, 250]
-
-#create a function which calculates the area of rebar in mm^2. 
-#takes int and returns int
-def dia_area_calc(diameter):
-    return math.floor(math.pi * (diameter / 2)**2)
 
 #create a function which returns the count of rebar per beam width (dimensionless). 
 #takes int and returns int
@@ -18,14 +13,15 @@ def rebar_count(width):
     else:
         return rebar_final_count - 1
 
-#create a function which assess whether side face rebar for tension is required. 
-#takes int and returns boolean.
-#true means required, false means not required.
-def side_face_assessment(depth):
-    if depth > 600:
-        return True
-    else:
-        return False
+#create a function which assess whether side face rebar for torsion is required.
+def side_face_assessment(df, column_a, column_b, column_c, column_d):
+    df.loc[df[column_b] > 0, column_c] = np.ceil((df[column_b] / 2) + df[column_c])
+    df.loc[df[column_b] > 0, column_d] = np.ceil((df[column_b] / 2) + df[column_d])
+    df.loc[df[column_a] > 600, column_c] = np.ceil(df[column_c] - (df[column_b] / 2))
+    df.loc[df[column_a] > 600, column_d] = np.ceil(df[column_d] - (df[column_b] / 2))
+    df.loc[df[column_a] <= 600, column_b] = 'Side face reinforcement is not required'
+    return df
+
 
 #create a function which assess how many legs to provide depending on count of rebar. 
 #takes int and returns int. 
@@ -40,7 +36,32 @@ def shear_legs(rebar_count):
     elif rebar_count >= 11:
         return 8
 
-#create a function which multiplies the area of rebar by the count of rebar provided.
-#takes int and returns int.
-def rebar_area_provided(dia_area_calc, rebar_count):
-    return math.floor(dia_area_calc * rebar_count)
+# this function checks the value in the df cell and loops a list until the value exceeds it
+# it then replaces the cell value with a string
+def rebar_calc(row, column_a, column_b):
+    dia_list = [16, 20, 25, 32]
+    rebar_string = ''
+    for dia in dia_list:
+        if np.floor(np.pi * (dia / 2)**2) * row[column_a] > row[column_b]:
+            rebar_string = f'{row[column_a]}T{dia}'
+            break  # stop looping once we found a match
+        elif np.floor(np.pi * (dia / 2)**2) * row[column_a] < row[column_b]:
+            for dia in dia_list:
+                if np.floor(np.pi * (dia / 2)**2) * row[column_a] * 2 > row[column_b]:
+                    rebar_string = f'2 rows of {row[column_a]}T{dia}'
+                    break  # stop looping once we found a match
+        elif np.floor(np.pi * (dia / 2)**2) * row[column_a] * 2 < row[column_b]:
+            for dia in dia_list:
+                if np.floor(np.pi * (dia / 2)**2) * row[column_a] * 3 > row[column_b]:
+                    rebar_string = f'3 rows of {row[column_a]}T{dia}'
+                    break  # stop looping once we found a match
+    return rebar_string
+
+#this function checks the value in the df cell and loops until side face reinforcement is met
+#assuming it is needed, if it isnt it breaks.
+
+def side_face_reinf(row, column_a,column_b):
+    if row[column_a] != 'Side face reinforcement is not required':
+        dia_list = [16, 20, 25, 32]
+        rebar_string = ''
+
