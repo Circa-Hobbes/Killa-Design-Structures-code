@@ -57,11 +57,29 @@ def rebar_calc(row, column_a, column_b):
                     break  # stop looping once we found a match
     return rebar_string
 
+
+#this function creates a column to check the clear depth for the side face reinforcement
+#it assumes a shear dia of 12mm, longitudinal dia of 20mm, and a cover of 25mm
+def side_face_count(depth):
+    side_clear_space = depth - (2*25) - (2*12) - 20
+    return math.floor(side_clear_space)
+
 #this function checks the value in the df cell and loops until side face reinforcement is met
 #assuming it is needed, if it isnt it breaks.
-
-def side_face_reinf(row, column_a,column_b):
+def side_face_reinf(row, column_a, column_b):
+    spacing_list = [250, 200, 150]
+    dia_list = [16, 20, 25, 32]
+    spacing_string = ''
     if row[column_a] != 'Side face reinforcement is not required':
-        dia_list = [16, 20, 25, 32]
-        rebar_string = ''
+        for spacing in spacing_list:
+            for dia in dia_list:
+                if round(row[column_b] / spacing) * (np.pi*(dia / 2)**2) > row[column_a]:
+                    spacing_string = f'T{dia}@{spacing} EF'
+                    break
+            else:
+                continue
+            break
+    else:
+        return 'Not needed'
+    return spacing_string
 
