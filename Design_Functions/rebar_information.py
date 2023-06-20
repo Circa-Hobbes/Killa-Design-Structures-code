@@ -38,7 +38,7 @@ def shear_legs(rebar_count):
 
 # this function checks the value in the df cell and loops a list until the value exceeds it
 # it then replaces the cell value with a string
-def rebar_calc(row, column_a, column_b):
+def rebar_string(row, column_a, column_b):
     dia_list = [16, 20, 25, 32]
     rebar_string = ''
     for dia in dia_list:
@@ -57,6 +57,22 @@ def rebar_calc(row, column_a, column_b):
                     break  # stop looping once we found a match
     return rebar_string
 
+# this function does the exact same thing as rebar_string, but returns the total area in mm2.
+def rebar_area(row, column_a, column_b):
+    dia_list = [16, 20, 25, 32]
+    rebar_area = 0
+    f = lambda x: np.floor(np.pi * (x / 2)**2) * row[column_a]
+    for dia in dia_list:
+        if f(dia) > row[column_b]:
+            rebar_area = f(dia)
+            break
+        elif f(dia) * 2 > row[column_b]:
+            rebar_area = f(dia) * 2
+            break
+        elif f(dia) * 3 > row[column_b]:
+            rebar_area = f(dia) * 3
+            break
+    return rebar_area
 
 #this function creates a column to check the clear depth for the side face reinforcement
 #it assumes a shear dia of 12mm, longitudinal dia of 20mm, and a cover of 25mm
