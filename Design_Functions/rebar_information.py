@@ -45,16 +45,12 @@ def rebar_string(row, column_a, column_b):
         if np.floor(np.pi * (dia / 2)**2) * row[column_a] > row[column_b]:
             rebar_string = f'{row[column_a]}T{dia}'
             break  # stop looping once we found a match
-        elif np.floor(np.pi * (dia / 2)**2) * row[column_a] < row[column_b]:
-            for dia in dia_list:
-                if np.floor(np.pi * (dia / 2)**2) * row[column_a] * 2 > row[column_b]:
-                    rebar_string = f'2 rows of {row[column_a]}T{dia}'
-                    break  # stop looping once we found a match
-        elif np.floor(np.pi * (dia / 2)**2) * row[column_a] * 2 < row[column_b]:
-            for dia in dia_list:
-                if np.floor(np.pi * (dia / 2)**2) * row[column_a] * 3 > row[column_b]:
-                    rebar_string = f'3 rows of {row[column_a]}T{dia}'
-                    break  # stop looping once we found a match
+        elif np.floor(np.pi * (dia / 2)**2) * row[column_a] * 2 > row[column_b]:
+            rebar_string = f'2 rows of {row[column_a]}T{dia}'
+            break  # stop looping once we found a match
+        elif np.floor(np.pi * (dia / 2)**2) * row[column_a] * 3 > row[column_b]:
+            rebar_string = f'3 rows of {row[column_a]}T{dia}'
+            break  # stop looping once we found a match
     return rebar_string
 
 # this function does the exact same thing as rebar_string, but returns the total area in mm2.
@@ -74,22 +70,29 @@ def rebar_area(row, column_a, column_b):
             break
     return rebar_area
 
+#this function subtracts the provided by the needed to provide the residual.
+def residual_rebar(row, column_a, column_b, column_c, column_d):
+    bottom_residual = row[column_a] - row[column_b]
+    top_residual = row[column_c] - row[column_d]
+    return bottom_residual + top_residual
+
 #this function creates a column to check the clear depth for the side face reinforcement
 #it assumes a shear dia of 12mm, longitudinal dia of 20mm, and a cover of 25mm
 def side_face_count(depth):
     side_clear_space = depth - (2*25) - (2*12) - 20
     return math.floor(side_clear_space)
 
-#this function checks the value in the df cell and loops until side face reinforcement is met
-#assuming it is needed, if it isnt it breaks.
-def side_face_reinf(row, column_a, column_b):
+# this function checks the value in the df cell and loops until side face reinforcement is met
+# assuming it is needed, if it isnt it breaks.
+def side_face_reinf(row, column_a, column_b, column_c):
     spacing_list = [250, 200, 150]
     dia_list = [16, 20, 25, 32]
+    f = lambda x, y: float(round(row[column_b] / x)) * float((np.pi*(y / 2)**2)) - float(row[column_c])
     spacing_string = ''
     if row[column_a] != 'Side face reinforcement is not required':
         for spacing in spacing_list:
             for dia in dia_list:
-                if round(row[column_b] / spacing) * (np.pi*(dia / 2)**2) > row[column_a]:
+                if f(spacing, dia) > float(row[column_a]):
                     spacing_string = f'T{dia}@{spacing} EF'
                     break
             else:
@@ -98,4 +101,5 @@ def side_face_reinf(row, column_a, column_b):
     else:
         return 'Not needed'
     return spacing_string
+
 
