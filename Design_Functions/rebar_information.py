@@ -1,7 +1,5 @@
 import math
 import numpy as np
-shear_dia_list = [12, 16, 20, 25]
-shear_spacing_list = [100, 150, 200, 250]
 
 #create a function which returns the count of rebar per beam width (dimensionless). 
 #takes int and returns int
@@ -87,12 +85,12 @@ def side_face_count(depth):
 def side_face_reinf(row, column_a, column_b, column_c):
     spacing_list = [250, 200, 150]
     dia_list = [16, 20, 25, 32]
-    f = lambda x, y: float(round(row[column_b] / x)) * float((np.pi*(y / 2)**2)) - float(row[column_c])
+    f = lambda x, y: round(row[column_b] / x) * (np.pi*(y / 2)**2)
     spacing_string = ''
     if row[column_a] != 'Side face reinforcement is not required':
-        for spacing in spacing_list:
-            for dia in dia_list:
-                if f(spacing, dia) > float(row[column_a]):
+        for dia in dia_list:
+            for spacing in spacing_list:
+                if f(spacing, dia) > row[column_a] - row[column_c]:
                     spacing_string = f'T{dia}@{spacing} EF'
                     break
             else:
@@ -102,4 +100,40 @@ def side_face_reinf(row, column_a, column_b, column_c):
         return 'Not needed'
     return spacing_string
 
+#this function returns the total shear area required to satisfy
+def shear_area_req(row, column_a, column_b):
+    required = 0
+    if row[column_a] == 'O/S':
+        required = 2 * row[column_b]
+    else:
+        required = row[column_a] + 2 * row[column_b]
+    return required
 
+#this function returns the total shear legs based on the width of the beam
+def req_legs(column_a):
+    leg = 0
+    if column_a <= 400:
+        leg = 2
+    elif column_a > 400 and column_a <= 800:
+        leg = 4
+    else:
+        leg = 6
+    return leg
+
+#this function loops through dia's and spacing to meet the required shear area
+# x = spacing, y = dia for lambda function
+def shear_string(row, column_a, column_b):
+    shear_dia_list = [12, 16, 20, 25]
+    shear_spacing_list = [250, 200, 150, 100]
+    shear_string = ''
+    f = lambda x,y: (1000 / x) * (np.pi*(y / 2)**2)
+    for dia in shear_dia_list:
+        for spacing in shear_spacing_list:
+            true = round(f(spacing,dia))
+            if true * row[column_a] > row[column_b]:
+                shear_string = f'T{dia} @ {spacing}s'
+                break
+        else:
+            continue
+        break
+    return shear_string
