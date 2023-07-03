@@ -39,46 +39,79 @@ def shear_legs(rebar_count):
 
 # this function checks the value in the df cell and loops a list until the value exceeds
 # it. it then replaces the cell value with a string
-def rebar_string(row, column_a, column_b):
+def rebar_string(row, column_a, column_b, column_c, column_d):
     dia_list = [16, 20, 25, 32]
     rebar_string = ""
 
-    for dia in dia_list:
-        if np.floor(np.pi * (dia / 2) ** 2) * row[column_a] > row[column_b]:
-            rebar_string = f"{row[column_a]}T{dia}"
-            break  # stop looping once we found a match
-        elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 2 > row[column_b]:
-            rebar_string = f"2 rows of {row[column_a]}T{dia}"
-            break  # stop looping once we found a match
-        elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
-            rebar_string = f"3 rows of {row[column_a]}T{dia}"
-            break  # stop looping once we found a match
-    return rebar_string
+    if row[column_c] == "False":
+        for dia in dia_list:
+            if np.floor(np.pi * (dia / 2) ** 2) * row[column_a] > row[column_b]:
+                rebar_string = f"{row[column_a]}T{dia}"
+                break  # stop looping once we found a match
+            elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 2 > row[column_b]:
+                rebar_string = f"2 rows of {row[column_a]}T{dia}"
+                break  # stop looping once we found a match
+            elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
+                rebar_string = f"3 rows of {row[column_a]}T{dia}"
+                break  # stop looping once we found a match
+        return rebar_string
+    elif row[column_d] == "False":
+        for dia in dia_list:
+            if np.floor(np.pi * (dia / 2) ** 2) * row[column_a] > row[column_b]:
+                rebar_string = f"{row[column_a]}T{dia}"
+                break  # stop looping once we found a match
+            elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 2 > row[column_b]:
+                rebar_string = f"2 rows of {row[column_a]}T{dia}"
+                break  # stop looping once we found a match
+            elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
+                rebar_string = f"3 rows of {row[column_a]}T{dia}"
+                break  # stop looping once we found a match
+        return rebar_string
+    else:
+        return "Overstressed. Please re-assess"
 
 
 # this function does the exact same thing as rebar_string but returns the total area
-def rebar_area(row, column_a, column_b):
+def rebar_area(row, column_a, column_b, column_c, column_d):
     dia_list = [16, 20, 25, 32]
     rebar_area = 0
-    f = lambda x: np.floor(np.pi * (x / 2) ** 2) * row[column_a]
-    for dia in dia_list:
-        if f(dia) > row[column_b]:
-            rebar_area = f(dia)
-            break
-        elif f(dia) * 2 > row[column_b]:
-            rebar_area = f(dia) * 2
-            break
-        elif f(dia) * 3 > row[column_b]:
-            rebar_area = f(dia) * 3
-            break
-    return rebar_area
+    if row[column_c] == "False":
+        f = lambda x: np.floor(np.pi * (x / 2) ** 2) * row[column_a]
+        for dia in dia_list:
+            if f(dia) > row[column_b]:
+                rebar_area = f(dia)
+                break
+            elif f(dia) * 2 > row[column_b]:
+                rebar_area = f(dia) * 2
+                break
+            elif f(dia) * 3 > row[column_b]:
+                rebar_area = f(dia) * 3
+                break
+        return rebar_area
+    elif row[column_d] == "False":
+        f = lambda x: np.floor(np.pi * (x / 2) ** 2) * row[column_a]
+        for dia in dia_list:
+            if f(dia) > row[column_b]:
+                rebar_area = f(dia)
+                break
+            elif f(dia) * 2 > row[column_b]:
+                rebar_area = f(dia) * 2
+                break
+            elif f(dia) * 3 > row[column_b]:
+                rebar_area = f(dia) * 3
+                break
+    else:
+        return "Overstressed. Please re-assess"
 
 
 # this function subtracts the provided by the needed to provide the residual.
 def residual_rebar(row, column_a, column_b, column_c, column_d):
-    bottom_residual = row[column_a] - row[column_b]
-    top_residual = row[column_c] - row[column_d]
-    return bottom_residual + top_residual
+    if row[column_a] == "Overstressed. Please re-assess":
+        return "Overstressed. Please re-assess"
+    else:
+        bottom_residual = row[column_a] - row[column_b]
+        top_residual = row[column_c] - row[column_d]
+        return bottom_residual + top_residual
 
 
 # this function creates a column to check the clear depth for the side reinforcement
@@ -90,23 +123,57 @@ def side_face_count(depth):
 
 # checks the value in the df cell and loops until side reinforcement is met
 # assuming it is needed, if it isnt it breaks.
-def side_face_reinf(row, column_a, column_b, column_c):
+def side_face_reinf(row, column_a, column_b, column_c, column_d):
     spacing_list = [250, 200, 150]
     dia_list = [16, 20, 25, 32]
-    f = lambda x, y: round(row[column_b] / x) * (np.pi * (y / 2) ** 2)
-    spacing_string = ""
-    if row[column_a] != "Side face reinforcement is not required":
-        for dia in dia_list:
-            for spacing in spacing_list:
-                if f(spacing, dia) > row[column_a] - row[column_c]:
-                    spacing_string = f"T{dia}@{spacing} EF"
-                    break
-            else:
-                continue
-            break
+    if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
+        f = lambda x, y: round(row[column_b] / x) * (np.pi * (y / 2) ** 2)
+        spacing_string = ""
+        if row[column_a] != "Side face reinforcement is not required":
+            for dia in dia_list:
+                for spacing in spacing_list:
+                    if f(spacing, dia) > row[column_a] - row[column_c]:
+                        spacing_string = f"T{dia}@{spacing} EF"
+                        break
+                else:
+                    continue
+                break
+        else:
+            return "Not needed"
+        return spacing_string
     else:
-        return "Not needed"
-    return spacing_string
+        return "Overstressed. Please re-assess"
+
+
+def side_face_area(row, column_a, column_b, column_c, column_d):
+    """returns the area of side face reinforcement provided in mm2
+
+    Args:
+        row (_type_): v6_flexural_df
+        column_a (_type_): required longitudinal torsion rebar
+        column_b (_type_): side face clear depth (mm)
+        column_c (_type_): the residual rebar to subtract required torsion rebar
+        column_d (_type_): to check if shear is overstressed
+    """
+    spacing_list = [250, 200, 150]
+    dia_list = [16, 20, 25, 32]
+    if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
+        f = lambda x, y: round(row[column_b] / x) * (np.pi * (y / 2) ** 2)
+        spacing_area = 0
+        if row[column_a] != "Side face reinforcement is not required":
+            for dia in dia_list:
+                for spacing in spacing_list:
+                    if f(spacing, dia) > row[column_a] - row[column_c]:
+                        spacing_area = np.floor(f(spacing, dia))
+                        break
+                else:
+                    continue
+                break
+        else:
+            return "Not needed"
+        return spacing_area
+    else:
+        return "Overstressed. Please re-assess"
 
 
 # this function returns the total shear area required to satisfy
@@ -133,21 +200,24 @@ def req_legs(column_a):
 
 # this function loops through dia's and spacing to meet the required shear area
 # x = spacing, y = dia for lambda function
-def shear_string(row, column_a, column_b):
+def shear_string(row, column_a, column_b, column_c):
     shear_dia_list = [12, 16, 20, 25]
     shear_spacing_list = [250, 200, 150, 100]
     shear_string = ""
-    f = lambda x, y: (1000 / x) * (np.pi * (y / 2) ** 2)
-    for dia in shear_dia_list:
-        for spacing in shear_spacing_list:
-            true = round(f(spacing, dia))
-            if true * row[column_a] > row[column_b]:
-                shear_string = f"T{dia} @ {spacing}s"
-                break
-        else:
-            continue
-        break
-    return shear_string
+    if row[column_c] != "O/S":
+        f = lambda x, y: (1000 / x) * (np.pi * (y / 2) ** 2)
+        for dia in shear_dia_list:
+            for spacing in shear_spacing_list:
+                true = round(f(spacing, dia))
+                if true * row[column_a] > row[column_b]:
+                    shear_string = f"T{dia} @ {spacing}s"
+                    break
+            else:
+                continue
+            break
+        return shear_string
+    else:
+        return "Overstressed. Please reasses"
 
 
 # this function cleans the cell of unnamed: 3 column to provide the width of each beam.
@@ -187,3 +257,34 @@ def clean_depth_dimensions(depth):
     v2_depth_list = v1_depth_list[1 + index_list : -4]
     true_depth = "".join(v2_depth_list)
     return int(true_depth)
+
+
+def flex_overstressed_check(row, column_a, column_b):
+    """This function checks if either flexural combinations are overstressed
+    if False, it's not overstressed and therefore can continue designing
+    if True, its overstressed and all consequent calculations may be ignored
+    Args:
+        row (_type_): the row considered in the df
+        column_a (_type_): the first design combo
+        column_b (_type_): the second design combo
+    """
+    if row[column_a] == "O/S":
+        return "True"
+    elif row[column_b] == "O/S":
+        return "True"
+    else:
+        return "False"
+
+
+def shear_overstressed_check(row, column_a):
+    """This function checks if the shear combination is overstressed
+    if False, it's not overstressed and therefore can continue designing
+    if True, its overstressed and all consequent calculations may be ignored
+    Args:
+        row (_type_): row considered in the df
+        column_a (_type_): shear design combination being assessed
+    """
+    if row[column_a] == "O/S":
+        return "True"
+    else:
+        return "False"
