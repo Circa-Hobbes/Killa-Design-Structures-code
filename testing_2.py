@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image, ImageTk
 import sys
 
+
 importlib.reload(rebar_func)
 
 
@@ -466,10 +467,10 @@ main_title.pack(padx=50, pady=20)
 
 # Put KLD design logo
 
-kld_logo = Image.open("killa-design.jpg")
-photo = ImageTk.PhotoImage(kld_logo)
-label = tk.Label(gui, image=photo)
-label.pack(side="top", fill="both", padx=50)
+# kld_logo = Image.open("killa-design.jpg")
+# photo = ImageTk.PhotoImage(kld_logo)
+# label = tk.Label(gui, image=photo)
+# label.pack(side="top", fill="both", padx=50)
 
 # Put the button to ask for the name of the completed excel file and to download it
 

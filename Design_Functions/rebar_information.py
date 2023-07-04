@@ -15,6 +15,7 @@ def rebar_count(width):
 
 # create a function which assess whether side face rebar for torsion is required.
 def side_face_assessment(df, column_a, column_b, column_c, column_d):
+    df = df.fillna(0)
     df.loc[df[column_b] > 0, column_c] = np.ceil((df[column_b] / 2) + df[column_c])
     df.loc[df[column_b] > 0, column_d] = np.ceil((df[column_b] / 2) + df[column_d])
     df.loc[df[column_a] > 600, column_c] = np.ceil(df[column_c] - (df[column_b] / 2))
