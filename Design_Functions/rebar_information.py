@@ -1,5 +1,5 @@
 import math
-import numpy as pn
+import numpy as np
 
 
 # create a function which returns the count of rebar per beam width (dimensionless).
