@@ -115,9 +115,9 @@ def residual_rebar(row, column_a, column_b, column_c, column_d):
 
 
 # this function creates a column to check the clear depth for the side reinforcement
-# it assumes a shear dia of 12mm, longitudinal dia of 20mm, and a cover of 25mm
+# it assumes a shear dia of 12mm, longitudinal dia of 20mm, and a cover of 40mm
 def side_face_count(depth):
-    side_clear_space = depth - (2 * 25) - (2 * 12) - 20
+    side_clear_space = depth - (2 * 40) - (2 * 12) - 20
     return math.floor(side_clear_space)
 
 
@@ -127,7 +127,7 @@ def side_face_reinf(row, column_a, column_b, column_c, column_d):
     spacing_list = [250, 200, 150]
     dia_list = [16, 20, 25, 32]
     if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
-        f = lambda x, y: round(row[column_b] / x) * (np.pi * (y / 2) ** 2)
+        f = lambda x, y: round(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
         spacing_string = ""
         if row[column_a] != "Side face reinforcement is not required":
             for dia in dia_list:
@@ -158,7 +158,7 @@ def side_face_area(row, column_a, column_b, column_c, column_d):
     spacing_list = [250, 200, 150]
     dia_list = [16, 20, 25, 32]
     if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
-        f = lambda x, y: round(row[column_b] / x) * (np.pi * (y / 2) ** 2)
+        f = lambda x, y: round(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
         spacing_area = 0
         if row[column_a] != "Side face reinforcement is not required":
             for dia in dia_list:
