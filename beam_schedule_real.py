@@ -12,8 +12,6 @@ import sys
 importlib.reload(rebar_func)
 
 
-
-
 def import_file():
     root = tk.Tk()
     root.withdraw()
@@ -92,7 +90,7 @@ columns = pd.MultiIndex.from_tuples(
         ("Top Reinforcement", "Middle (T)"),
         ("Top Reinforcement", "Right (TR)"),
         ("Side Face Reinforcement", "Left"),
-        ("Side Face Reinforcement", "Middle"),
+        ("Side Face Reinforcement", ""),
         ("Side Face Reinforcement", "Right"),
         ("Shear links", "Left (H)"),
         ("Shear links", "Middle (J)"),
@@ -261,6 +259,7 @@ v6_flexural_df.insert(10, "Bottom Rebar Area Provided (mm2)", move_3)
 v6_flexural_df.insert(11, "Residual Rebar (mm2)", move_1)
 v6_flexural_df.insert(14, "Side Face Clear Space (mm)", move_4)
 
+# begin calculation process for shear reinforcement
 v2_shear_df.loc[:, "Shear rebar area (mm2/m)"] = v2_shear_df[
     "Shear rebar area (mm2/m)"
 ].fillna("O/S")
@@ -277,6 +276,16 @@ v2_shear_df.loc[:, "Required Shear Legs"] = v2_shear_df["Width (mm)"].apply(
 v2_shear_df.insert(7, "Shear Link Schedule", "-")
 v2_shear_df.loc[:, "Shear Link Schedule"] = v2_shear_df.apply(
     rebar_func.shear_string,
+    axis=1,
+    args=(
+        "Required Shear Legs",
+        "Required Shear Area (mm2)",
+        "Shear rebar area (mm2/m)",
+    ),
+)
+v2_shear_df.insert(7, "Shear area provided (mm2)", "-")
+v2_shear_df.loc[:, "Shear area provided (mm2)"] = v2_shear_df.apply(
+    rebar_func.shear_area,
     axis=1,
     args=(
         "Required Shear Legs",
@@ -331,6 +340,7 @@ side_face_df = v7_flexural_df.drop(
 ).copy()
 
 
+# take the maximum side face reinforcement schedule
 def replace_with_max(group):
     # Convert 'Side Face Reinforcement Provided (mm2)' to numeric, making non-numeric values NaN
     group["Side Face Reinforcement Provided (mm2)"] = pd.to_numeric(
@@ -372,6 +382,48 @@ side_face_df = side_face_df.drop(columns="Side Face Reinforcement Provided (mm2)
 v7_flexural_df["Side Face Reinforcement Schedule"] = side_face_df[
     "Side Face Reinforcement Schedule"
 ]
+
+
+# take the maximum shear link schedule for all sides of beam
+def replace_with_max_shear(group):
+    # Convert 'Shear area provided (mm2)' to numeric, making non-numeric values NaN
+    group["Shear area provided (mm2)"] = pd.to_numeric(
+        group["Shear area provided (mm2)"], errors="coerce"
+    )
+
+    # If all values are NaN, leave the group as it is
+    if group["Shear area provided (mm2)"].isna().all():
+        return group
+    # If any value is NaN, replace all values with 'Over-stressed. Please reassess'
+    elif group["Shear area provided (mm2)"].isna().any():
+        group["Shear area provided (mm2)"] = "Overstressed. Please reassess"
+        group["Shear Link Schedule"] = "Overstressed. Please reassess"
+        return group
+    else:
+        # Find max value
+        max_row = group.loc[group["Shear area provided (mm2)"].idxmax()]
+
+        # replace all values in the group with the values from the max row
+        group["Shear area provided (mm2)"] = max_row["Shear area provided (mm2)"]
+        group["Shear Link Schedule"] = max_row["Shear Link Schedule"]
+        return group
+
+
+# Create a 'Group' column for grouping
+v3_shear_df["Group"] = np.repeat(range(len(v3_shear_df) // 3), 3)
+
+# Apply the function to each group
+v3_shear_df = v3_shear_df.groupby("Group").apply(replace_with_max_shear)
+
+# Drop the 'Group' column
+v3_shear_df = v3_shear_df.drop(columns="Group")
+
+v3_shear_df = v3_shear_df.reset_index(drop=True)
+
+# update v7_flexural_df with new side face reinf schedule
+
+v3_shear_df = v3_shear_df.drop(columns="Shear area provided (mm2)")
+
 
 v3_shear_df["new_index"] = np.repeat(range(len(v3_shear_df) // 3), 3)[
     : len(v3_shear_df)
@@ -429,7 +481,7 @@ beam_schedule_df[("Top Reinforcement", "Right (TR)")].update(
 beam_schedule_df[("Side Face Reinforcement", "Left")].update(
     v7_flexural_df_grouped_Side_Rebar[0]
 )
-beam_schedule_df[("Side Face Reinforcement", "Middle")].update(
+beam_schedule_df[("Side Face Reinforcement", "")].update(
     v7_flexural_df_grouped_Side_Rebar[1]
 )
 beam_schedule_df[("Side Face Reinforcement", "Right")].update(
@@ -439,6 +491,12 @@ beam_schedule_df[("Shear links", "Left (H)")].update(v3_shear_df_grouped[0])
 beam_schedule_df[("Shear links", "Middle (J)")].update(v3_shear_df_grouped[1])
 beam_schedule_df[("Shear links", "Right (K)")].update(v3_shear_df_grouped[2])
 
+# drop the left and right subcolumns of side face reinforcement in beam_schedule_df
+beam_schedule_final_df = beam_schedule_df.copy()
+beam_schedule_final_df = beam_schedule_final_df.drop(
+    [("Side Face Reinforcement", "Left"), ("Side Face Reinforcement", "Right")], axis=1
+)
+
 
 def export_file(beam_schedule_df):
     root = tk.Tk()
@@ -446,7 +504,7 @@ def export_file(beam_schedule_df):
     filepath = asksaveasfilename(defaultextension=".xlsx")
     root.destroy()
     if filepath:
-        beam_schedule_df.to_excel(filepath, index=True)
+        beam_schedule_final_df.to_excel(filepath, index=True)
         sys.exit()
 
 

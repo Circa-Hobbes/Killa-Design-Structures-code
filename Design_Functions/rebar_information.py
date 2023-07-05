@@ -221,6 +221,37 @@ def shear_string(row, column_a, column_b, column_c):
         return "Overstressed. Please reasses"
 
 
+def shear_area(row, column_a, column_b, column_c):
+    """loops through dias and spacing to meet required shear area
+
+    Args:
+        row (_type_): v2_shear_df row
+        column_a (_type_): required shear legs
+        column_b (_type_): required shear area
+        column_c (_type_): shear rebar area
+
+    Returns:
+        _type_: returns the area of shear in mm2
+    """
+    shear_dia_list = [12, 16, 20, 25]
+    shear_spacing_list = [250, 200, 150, 100]
+    area = 0
+    if row[column_c] != "O/S":
+        f = lambda x, y: (1000 / x) * (np.pi * (y / 2) ** 2)
+        for dia in shear_dia_list:
+            for spacing in shear_spacing_list:
+                true = round(f(spacing, dia))
+                if true * row[column_a] > row[column_b]:
+                    area = true * row[column_a]
+                    break
+            else:
+                continue
+            break
+        return area
+    else:
+        return "Overstressed. Please reasses"
+
+
 # this function cleans the cell of unnamed: 3 column to provide the width of each beam.
 def clean_width_dimensions(width):
     width_list = list(width)  # turn string into list of individual indexes
