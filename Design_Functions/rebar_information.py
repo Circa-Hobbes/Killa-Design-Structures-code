@@ -50,10 +50,10 @@ def rebar_string(row, column_a, column_b, column_c, column_d):
                 rebar_string = f"{row[column_a]}T{dia}"
                 break  # stop looping once we found a match
             elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 2 > row[column_b]:
-                rebar_string = f"2 rows of {row[column_a]}T{dia}"
+                rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia}"
                 break  # stop looping once we found a match
             elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
-                rebar_string = f"3 rows of {row[column_a]}T{dia}"
+                rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia}"
                 break  # stop looping once we found a match
         return rebar_string
     elif row[column_d] == "False":
@@ -62,10 +62,10 @@ def rebar_string(row, column_a, column_b, column_c, column_d):
                 rebar_string = f"{row[column_a]}T{dia}"
                 break  # stop looping once we found a match
             elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 2 > row[column_b]:
-                rebar_string = f"2 rows of {row[column_a]}T{dia}"
+                rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia}"
                 break  # stop looping once we found a match
             elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
-                rebar_string = f"3 rows of {row[column_a]}T{dia}"
+                rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia}"
                 break  # stop looping once we found a match
         return rebar_string
     else:
