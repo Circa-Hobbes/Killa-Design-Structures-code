@@ -205,13 +205,14 @@ def shear_string(row, column_a, column_b, column_c):
     shear_dia_list = [12, 16, 20, 25]
     shear_spacing_list = [250, 200, 150, 100]
     shear_string = ""
+    legs = row[column_a]
     if row[column_c] != "O/S":
         f = lambda x, y: (1000 / x) * (np.pi * (y / 2) ** 2)
         for dia in shear_dia_list:
             for spacing in shear_spacing_list:
                 true = round(f(spacing, dia))
-                if true * row[column_a] > row[column_b]:
-                    shear_string = f"T{dia} @ {spacing}s"
+                if true * legs > row[column_b]:
+                    shear_string = f"{legs}T{dia} @ {spacing}s"
                     break
             else:
                 continue
@@ -336,4 +337,4 @@ def quick_side_check(row, column_a, column_b):
     if row[column_b, sub_b] == "Overstressed. Please reassess":
         pass
     elif row[column_a, sub_a] <= 600:
-        row[column_b, sub_b] = "Side face reinforcement is not required"
+        row[column_b, sub_b] = " "
