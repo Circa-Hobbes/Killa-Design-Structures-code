@@ -320,3 +320,20 @@ def shear_overstressed_check(row, column_a):
         return "True"
     else:
         return "False"
+
+
+def quick_side_check(row, column_a, column_b):
+    """if the side face reinforcement is less than 600 depth, return not needed
+
+    Args:
+        row (Series): row of beam_schedule_final_df
+        column_a (tuple): dimensions, depth
+        column_b (tuple): side face reinforcement, empty sub
+    """
+    sub_a, sub_b = column_a[1], column_b[1]
+    column_a, column_b = column_a[0], column_b[0]
+
+    if row[column_b, sub_b] == "Overstressed. Please reassess":
+        pass
+    elif row[column_a, sub_a] <= 600:
+        row[column_b, sub_b] = "Side face reinforcement is not required"

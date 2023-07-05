@@ -498,6 +498,18 @@ beam_schedule_final_df = beam_schedule_final_df.drop(
     [("Side Face Reinforcement", "Left"), ("Side Face Reinforcement", "Right")], axis=1
 )
 
+beam_schedule_final_df.columns = beam_schedule_final_df.columns.set_levels(
+    [level.str.strip() for level in beam_schedule_final_df.columns.levels], level=[0, 1]
+)
+beam_schedule_final_df.apply(
+    rebar_func.quick_side_check,
+    args=(
+        ("Dimensions", "Depth (mm)"),
+        ("Side Face Reinforcement", ""),
+    ),
+    axis=1,
+)
+
 
 def export_file(beam_schedule_df):
     root = tk.Tk()
