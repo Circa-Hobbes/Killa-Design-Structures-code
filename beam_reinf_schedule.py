@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pathlib
 import pandas as pd
@@ -508,27 +509,40 @@ def export_file(beam_schedule_df):
         sys.exit()
 
 
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 # create main program
 gui = tk.Tk()
 
 # create window geometry and title
-gui.geometry("1000x350")
+gui.geometry("900x350")
 gui.title("Beam Reinforcement Scheduling Program - Made by Adnan @ KLD")
 
 # Create title inside program
 main_title = tk.Label(
     gui,
     text="Beam Reinforcement Scheduling Program. Made by Adnan @ KLD",
-    font=("Helvetica", 20),
+    font=("Helvetica", 18),
 )
 main_title.pack(padx=50, pady=20)
 
 # Put KLD design logo
-
-# kld_logo = Image.open("killa-design.jpg")
-# photo = ImageTk.PhotoImage(kld_logo)
-# label = tk.Label(gui, image=photo)
-# label.pack(side="top", fill="both", padx=50)
+image_path = resource_path(
+    "killa-design.jpg"
+)  # use the resource_path function to get the correct path
+kld_logo = Image.open(image_path)  # Then use this path to open the image
+photo = ImageTk.PhotoImage(kld_logo)
+label = tk.Label(gui, image=photo)
+label.pack(side="top", fill="both", padx=50)
 
 # Put the button to ask for the name of the completed excel file and to download it
 
