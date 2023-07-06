@@ -3,7 +3,7 @@ import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pathlib
 import pandas as pd
-import Design_Functions.rebar_information as rebar_func
+import design_functions.rebar_information as rebar_func
 import importlib
 import numpy as np
 from PIL import Image, ImageTk
@@ -73,7 +73,7 @@ v2_shear_df = v2_shear_df.rename(
     columns={
         "Unnamed: 7": "Shear rebar area (mm2/m)",
         "Unnamed: 10": "Shear tension rebar area (mm2/m)",
-        "Unnamed: 13": "Longitudinal tension rebar area (mm2)",
+        "Unnamed: 13": "Torsional Rebar(mm2)",
     }
 )
 
@@ -121,9 +121,7 @@ v5_flexural_df = v5_flexural_df.rename(
     }
 )
 v5_flexural_df.reset_index(drop=True, inplace=True)
-v5_flexural_df["Longitudinal tension rebar area (mm2)"] = v2_shear_df[
-    "Longitudinal tension rebar area (mm2)"
-]
+v5_flexural_df["Torsional Rebar(mm2)"] = v2_shear_df["Torsional Rebar(mm2)"]
 
 # create new columns
 v5_flexural_df["Width (mm)"] = [1] * len(v5_flexural_df)
@@ -160,7 +158,7 @@ v6_flexural_df.insert(8, "Residual Rebar (mm2)", "-")
 rebar_func.side_face_assessment(
     v6_flexural_df,
     "Depth (mm)",
-    "Longitudinal tension rebar area (mm2)",
+    "Torsional Rebar(mm2)",
     "Bottom reinforcement",
     "Top Reinforcement",
 )
@@ -233,7 +231,7 @@ v6_flexural_df.loc[:, "Side Face Reinforcement Provided (mm2)"] = v6_flexural_df
     rebar_func.side_face_area,
     axis=1,
     args=(
-        "Longitudinal tension rebar area (mm2)",
+        "Torsional Rebar(mm2)",
         "Side Face Clear Space (mm)",
         "Residual Rebar (mm2)",
         "Shear overstressed",
@@ -243,7 +241,7 @@ v6_flexural_df.loc[:, "Side Face Reinforcement Schedule"] = v6_flexural_df.apply
     rebar_func.side_face_reinf,
     axis=1,
     args=(
-        "Longitudinal tension rebar area (mm2)",
+        "Torsional Rebar(mm2)",
         "Side Face Clear Space (mm)",
         "Residual Rebar (mm2)",
         "Shear overstressed",
@@ -304,7 +302,7 @@ v7_flexural_df = v6_flexural_df.drop(
         "Location",
         "Bottom reinforcement",
         "Top Reinforcement",
-        "Longitudinal tension rebar area (mm2)",
+        "Torsional Rebar(mm2)",
         "Rebar Count",
         "Side Face Clear Space (mm)",
         "Residual Rebar (mm2)",
@@ -319,7 +317,7 @@ v3_shear_df = v2_shear_df.drop(
         "Width (mm)",
         "Shear rebar area (mm2/m)",
         "Shear tension rebar area (mm2/m)",
-        "Longitudinal tension rebar area (mm2)",
+        "Torsional Rebar(mm2)",
         "Required Shear Area (mm2)",
         "Required Shear Legs",
     ],

@@ -5,8 +5,7 @@ import numpy as np
 # create a function which returns the count of rebar per beam width (dimensionless).
 # takes int and returns int
 def rebar_count(width):
-    rebar_string = str(width)
-    rebar_final_count = int(rebar_string[0])
+    rebar_final_count = width // 100
     if rebar_final_count == 2:
         return rebar_final_count
     else:
