@@ -3,7 +3,7 @@ import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pathlib
 import pandas as pd
-import design_functions.rebar_information as rebar_func
+import Design_Functions.rebar_information as rebar_func
 import importlib
 import numpy as np
 from PIL import Image, ImageTk
@@ -72,8 +72,8 @@ v4_flexural_df = v4_flexural_df.rename(columns={"Unnamed: 1": "ETABS beam ID"})
 v2_shear_df = v2_shear_df.rename(
     columns={
         "Unnamed: 7": "Shear rebar area (mm2/m)",
-        "Unnamed: 10": "Shear tension rebar area (mm2/m)",
-        "Unnamed: 13": "Torsional Rebar(mm2)",
+        "Unnamed: 10": "Shear Torsion rebar area (mm2/m)",
+        "Unnamed: 13": "Torsional Rebar (mm2)",
     }
 )
 
@@ -121,7 +121,7 @@ v5_flexural_df = v5_flexural_df.rename(
     }
 )
 v5_flexural_df.reset_index(drop=True, inplace=True)
-v5_flexural_df["Torsional Rebar(mm2)"] = v2_shear_df["Torsional Rebar(mm2)"]
+v5_flexural_df["Torsional Rebar (mm2)"] = v2_shear_df["Torsional Rebar (mm2)"]
 
 # create new columns
 v5_flexural_df["Width (mm)"] = [1] * len(v5_flexural_df)
@@ -155,13 +155,25 @@ v6_flexural_df.loc[:, "Flexural overstressed (Combo 2)"] = v1_flexural_df.apply(
 )  # check if beam is overstressed in flexure
 v6_flexural_df.loc[:, "ETABS beam ID"] = v2_flexural_df["Unnamed: 1"]
 v6_flexural_df.insert(8, "Residual Rebar (mm2)", "-")
-rebar_func.side_face_assessment(
-    v6_flexural_df,
-    "Depth (mm)",
-    "Torsional Rebar(mm2)",
-    "Bottom reinforcement",
-    "Top Reinforcement",
-)
+
+# v6_flexural_df.loc[:, 'Bottom reinforcement', 'Top Reinforcement'] = rebar_func.side_face_assessment(
+#     v6_flexural_df,
+#     "Depth (mm)",
+#     "Torsional Rebar (mm2)",
+#     "Bottom reinforcement",
+#     "Top Reinforcement",
+# )
+
+v6_flexural_df = rebar_func.add_long_rebar(v6_flexural_df, 'Depth (mm)', 'Torsional Rebar (mm2)', 'Bottom reinforcement', 'Top Reinforcement')
+
+# v6_flexural_df.loc[:, 'Bottom Reinforcement'] = rebar_func.side_face_assessment(
+#     v6_flexural_df,
+#     "Depth (mm)",
+#     "Torsional Rebar (mm2)",
+#     "Bottom reinforcement",
+#     "Top Reinforcement",
+# )
+
 v6_flexural_df.loc[:, "Rebar Count"] = v6_flexural_df.loc[:, "Width (mm)"].apply(
     rebar_func.rebar_count
 )
@@ -171,7 +183,7 @@ v6_flexural_df.loc[:, "Bottom Rebar Schedule"] = v6_flexural_df.apply(
     args=(
         "Rebar Count",
         "Bottom reinforcement",
-        "Flexural overstressed (Combo 1)",
+        # "Flexural overstressed (Combo 1)",
         "Flexural overstressed (Combo 2)",
     ),
 )
@@ -182,7 +194,7 @@ v6_flexural_df.loc[:, "Top Rebar Schedule"] = v6_flexural_df.apply(
         "Rebar Count",
         "Top Reinforcement",
         "Flexural overstressed (Combo 1)",
-        "Flexural overstressed (Combo 2)",
+        # "Flexural overstressed (Combo 2)",
     ),
 )
 v6_flexural_df.insert(
@@ -194,7 +206,7 @@ v6_flexural_df.insert(
         args=(
             "Rebar Count",
             "Bottom reinforcement",
-            "Flexural overstressed (Combo 1)",
+            # "Flexural overstressed (Combo 1)",
             "Flexural overstressed (Combo 2)",
         ),
     ),
@@ -209,7 +221,7 @@ v6_flexural_df.insert(
             "Rebar Count",
             "Top Reinforcement",
             "Flexural overstressed (Combo 1)",
-            "Flexural overstressed (Combo 2)",
+            # "Flexural overstressed (Combo 2)",
         ),
     ),
 )
@@ -226,12 +238,13 @@ v6_flexural_df.loc[:, "Residual Rebar (mm2)"] = v6_flexural_df.apply(
 v6_flexural_df.loc[:, "Side Face Clear Space (mm)"] = v6_flexural_df[
     "Depth (mm)"
 ].apply(rebar_func.side_face_count)
+
 v6_flexural_df.insert(14, "Side Face Reinforcement Provided (mm2)", "-")
 v6_flexural_df.loc[:, "Side Face Reinforcement Provided (mm2)"] = v6_flexural_df.apply(
     rebar_func.side_face_area,
     axis=1,
     args=(
-        "Torsional Rebar(mm2)",
+        "Torsional Rebar (mm2)",
         "Side Face Clear Space (mm)",
         "Residual Rebar (mm2)",
         "Shear overstressed",
@@ -241,7 +254,7 @@ v6_flexural_df.loc[:, "Side Face Reinforcement Schedule"] = v6_flexural_df.apply
     rebar_func.side_face_reinf,
     axis=1,
     args=(
-        "Torsional Rebar(mm2)",
+        "Torsional Rebar (mm2)",
         "Side Face Clear Space (mm)",
         "Residual Rebar (mm2)",
         "Shear overstressed",
@@ -265,7 +278,7 @@ v2_shear_df.loc[:, "Shear rebar area (mm2/m)"] = v2_shear_df[
 v2_shear_df.loc[:, "Required Shear Area (mm2)"] = v2_shear_df.apply(
     rebar_func.shear_area_req,
     axis=1,
-    args=("Shear rebar area (mm2/m)", "Shear tension rebar area (mm2/m)"),
+    args=("Shear rebar area (mm2/m)", "Shear Torsion rebar area (mm2/m)"),
 )
 v2_shear_df.insert(1, "Width (mm)", v6_flexural_df["Width (mm)"])
 v2_shear_df.insert(6, "Required Shear Legs", "-")
@@ -302,7 +315,7 @@ v7_flexural_df = v6_flexural_df.drop(
         "Location",
         "Bottom reinforcement",
         "Top Reinforcement",
-        "Torsional Rebar(mm2)",
+        "Torsional Rebar (mm2)",
         "Rebar Count",
         "Side Face Clear Space (mm)",
         "Residual Rebar (mm2)",
@@ -316,8 +329,8 @@ v3_shear_df = v2_shear_df.drop(
     [
         "Width (mm)",
         "Shear rebar area (mm2/m)",
-        "Shear tension rebar area (mm2/m)",
-        "Torsional Rebar(mm2)",
+        "Shear Torsion rebar area (mm2/m)",
+        "Torsional Rebar (mm2)",
         "Required Shear Area (mm2)",
         "Required Shear Legs",
     ],
