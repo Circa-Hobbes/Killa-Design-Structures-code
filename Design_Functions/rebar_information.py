@@ -57,7 +57,6 @@ def add_long_rebar(df, column_a, column_b, column_c, column_d):
 #     elif rebar_count >= 11:
 #         return 8
 
-
 # this function checks the value in the df cell and loops a list until the value exceeds
 # it. it then replaces the cell value with a string
 def rebar_string(row, column_a, column_b, column_c):
@@ -65,12 +64,13 @@ def rebar_string(row, column_a, column_b, column_c):
     rebar_string = ""
 
     if row[column_c] == "False":
-        for dia in dia_list:
-            if np.floor(np.pi * (dia / 2) ** 2) * row[column_a] > row[column_b]:
-                rebar_string = f"{row[column_a]}T{dia}"
+        for dia_1 in dia_list:
+            if np.floor(np.pi * (dia_1 / 2) ** 2) * row[column_a] > row[column_b]:
+                rebar_string = f"{row[column_a]}T{dia_1}"
                 break  # stop looping once we found a match
-            elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 2 > row[column_b]:
-                rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia}"
+            for dia_2 in dia_list:
+             if np.floor(np.pi * (dia_1 / 2) ** 2) * row[column_a] + np.floor(np.pi * (dia_2 / 2) ** 2) * row[column_a] > row[column_b]:
+                rebar_string = f"{row[column_a]}T{dia_1} + {row[column_a]}T{dia_2}"
                 break  # stop looping once we found a match
             # elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
             #     rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia} + {row[column_a]}T{dia}"
@@ -88,8 +88,11 @@ def rebar_string(row, column_a, column_b, column_c):
     #             rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia} + {row[column_a]}T{dia}"
     #             break  # stop looping once we found a match
     #     return rebar_string
+    if not rebar_string:
+        return "Inc. rebar count and re-assess."
     else:
         return "Overstressed. Please re-assess"
+    
 
 
 # this function does the exact same thing as rebar_string but returns the total area
@@ -98,13 +101,17 @@ def rebar_area(row, column_a, column_b, column_c):
     rebar_area = 0
     if row[column_c] == "False":
         f = lambda x: np.floor(np.pi * (x / 2) ** 2) * row[column_a]
-        for dia in dia_list:
-            if f(dia) > row[column_b]:
-                rebar_area = f(dia)
+        for dia_1 in dia_list:
+            if f(dia_1) > row[column_b]:
+                rebar_area = f(dia_1)
                 break
-            elif f(dia) * 2 > row[column_b]:
-                rebar_area = f(dia) * 2
+            for dia_2 in dia_list:
+                if f(dia_1) + f(dia_2) > row[column_b]:
+                    rebar_area = f(dia_1)  + f(dia_2)
                 break
+            # elif f(dia) * 2 > row[column_b]:
+            #     rebar_area = f(dia) * 2
+            #     break
             # elif f(dia) * 3 > row[column_b]:
             #     rebar_area = f(dia) * 3
             #     break
