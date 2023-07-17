@@ -3,7 +3,7 @@ import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pathlib
 import pandas as pd
-import Design_Functions.rebar_information as rebar_func
+import design_functions.rebar_information as rebar_func
 import importlib
 import numpy as np
 from PIL import Image, ImageTk
@@ -164,7 +164,13 @@ v6_flexural_df.insert(8, "Residual Rebar (mm2)", "-")
 #     "Top Reinforcement",
 # )
 
-v6_flexural_df = rebar_func.add_long_rebar(v6_flexural_df, 'Depth (mm)', 'Torsional Rebar (mm2)', 'Bottom reinforcement', 'Top Reinforcement')
+v6_flexural_df = rebar_func.add_long_rebar(
+    v6_flexural_df,
+    "Depth (mm)",
+    "Torsional Rebar (mm2)",
+    "Bottom reinforcement",
+    "Top Reinforcement",
+)
 
 # v6_flexural_df.loc[:, 'Bottom Reinforcement'] = rebar_func.side_face_assessment(
 #     v6_flexural_df,
@@ -293,7 +299,7 @@ v2_shear_df.loc[:, "Shear Link Schedule"] = v2_shear_df.apply(
     args=(
         "Required Shear Legs",
         "Required Shear Area (mm2)",
-        ),
+    ),
 )
 v2_shear_df.insert(7, "Shear area provided (mm2)", "-")
 v2_shear_df.loc[:, "Shear area provided (mm2)"] = v2_shear_df.apply(
@@ -302,7 +308,6 @@ v2_shear_df.loc[:, "Shear area provided (mm2)"] = v2_shear_df.apply(
     args=(
         "Required Shear Legs",
         "Required Shear Area (mm2)",
-        
     ),
 )
 
@@ -415,9 +420,18 @@ def replace_with_max_shear(group):
         # Find max value
         max_row = group.loc[group["Shear area provided (mm2)"].idxmax()]
 
-        # replace all values in the group with the values from the max row
-        group["Shear area provided (mm2)"] = max_row["Shear area provided (mm2)"]
-        group["Shear Link Schedule"] = max_row["Shear Link Schedule"]
+        # replace the last and first values in the group with the values from the max row
+        group.at[group.index[0], "Shear area provided (mm2)"] = max_row[
+            "Shear area provided (mm2)"
+        ]
+        group.at[group.index[0], "Shear Link Schedule"] = max_row["Shear Link Schedule"]
+        group.at[group.index[-1], "Shear area provided (mm2)"] = max_row[
+            "Shear area provided (mm2)"
+        ]
+        group.at[group.index[-1], "Shear Link Schedule"] = max_row[
+            "Shear Link Schedule"
+        ]
+
         return group
 
 

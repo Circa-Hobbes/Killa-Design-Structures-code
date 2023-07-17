@@ -22,6 +22,7 @@ def rebar_count(width):
 #     # df.loc[df[depth] <= 600, tor_rebar] = "Side face reinforcement is not required"
 #     return df
 
+
 def add_long_rebar(df, column_a, column_b, column_c, column_d):
     df = df.fillna(0)
     condition1 = df[column_a] <= 600
@@ -42,6 +43,7 @@ def add_long_rebar(df, column_a, column_b, column_c, column_d):
     # df.loc[condition3, column_b] = "Side face reinforcement is not required"
     return df
 
+
 # create a function which assess how many legs to provide depending on count of rebar.
 # takes int and returns int.
 # this function assumes that the width of the beam is not greater than 2 metres
@@ -57,6 +59,7 @@ def add_long_rebar(df, column_a, column_b, column_c, column_d):
 #     elif rebar_count >= 11:
 #         return 8
 
+
 # this function checks the value in the df cell and loops a list until the value exceeds
 # it. it then replaces the cell value with a string
 def rebar_string(row, column_a, column_b, column_c):
@@ -69,9 +72,13 @@ def rebar_string(row, column_a, column_b, column_c):
                 rebar_string = f"{row[column_a]}T{dia_1}"
                 break  # stop looping once we found a match
             for dia_2 in dia_list:
-             if np.floor(np.pi * (dia_1 / 2) ** 2) * row[column_a] + np.floor(np.pi * (dia_2 / 2) ** 2) * row[column_a] > row[column_b]:
-                rebar_string = f"{row[column_a]}T{dia_1} + {row[column_a]}T{dia_2}"
-                break  # stop looping once we found a match
+                if (
+                    np.floor(np.pi * (dia_1 / 2) ** 2) * row[column_a]
+                    + np.floor(np.pi * (dia_2 / 2) ** 2) * row[column_a]
+                    > row[column_b]
+                ):
+                    rebar_string = f"{row[column_a]}T{dia_1} + {row[column_a]}T{dia_2}"
+                    break  # stop looping once we found a match
             # elif np.floor(np.pi * (dia / 2) ** 2) * row[column_a] * 3 > row[column_b]:
             #     rebar_string = f"{row[column_a]}T{dia} + {row[column_a]}T{dia} + {row[column_a]}T{dia}"
             #     break  # stop looping once we found a match
@@ -92,7 +99,6 @@ def rebar_string(row, column_a, column_b, column_c):
         return "Inc. rebar count and re-assess."
     else:
         return "Overstressed. Please re-assess"
-    
 
 
 # this function does the exact same thing as rebar_string but returns the total area
@@ -107,7 +113,7 @@ def rebar_area(row, column_a, column_b, column_c):
                 break
             for dia_2 in dia_list:
                 if f(dia_1) + f(dia_2) > row[column_b]:
-                    rebar_area = f(dia_1)  + f(dia_2)
+                    rebar_area = f(dia_1) + f(dia_2)
                 break
             # elif f(dia) * 2 > row[column_b]:
             #     rebar_area = f(dia) * 2
@@ -134,7 +140,10 @@ def rebar_area(row, column_a, column_b, column_c):
 
 # this function subtracts the provided by the needed to provide the residual.
 def residual_rebar(row, column_a, column_b, column_c, column_d):
-    if row[column_a] == "Overstressed. Please re-assess" or row[column_c] == "Overstressed. Please re-assess":
+    if (
+        row[column_a] == "Overstressed. Please re-assess"
+        or row[column_c] == "Overstressed. Please re-assess"
+    ):
         return "Overstressed. Please re-assess"
     else:
         bottom_residual = row[column_a] - row[column_b]
@@ -145,7 +154,7 @@ def residual_rebar(row, column_a, column_b, column_c, column_d):
 # this function creates a column to check the clear depth for the side reinforcement
 # it assumes a shear dia of 12mm, longitudinal dia of 20mm, and a cover of 40mm
 def side_face_count(depth):
-    side_clear_space = depth - (2 * 40) - (2 * 12) - (2*20)
+    side_clear_space = depth - (2 * 40) - (2 * 12) - (2 * 20)
     return math.floor(side_clear_space)
 
 
@@ -153,7 +162,7 @@ def side_face_count(depth):
 # assuming it is needed, if it isnt it breaks.
 def side_face_reinf(row, column_a, column_b, column_c, column_d):
     spacing_list = [250, 200, 150]
-    dia_list = [12,16, 20, 25, 32]
+    dia_list = [12, 16, 20, 25, 32]
     if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
         f = lambda x, y: np.floor(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
         spacing_string = ""
@@ -237,10 +246,12 @@ def shear_string(row, column_a, column_b):
     if row[column_b] != "Overstressed. Please re-assess":
         for dia in shear_dia_list:
             for spacing in shear_spacing_list:
-                if (1000 / spacing) * (np.pi * (dia / 2) ** 2)*legs > row[column_b]:
-                   shear_string = f"{legs}L-T{dia}@{spacing}s"
-                   break
-            if shear_string: # If shear_string is assigned, break the outer loop as well.
+                if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * legs > row[column_b]:
+                    shear_string = f"{legs}L-T{dia}@{spacing}s"
+                    break
+            if (
+                shear_string
+            ):  # If shear_string is assigned, break the outer loop as well.
                 break
         return shear_string
     else:
@@ -266,10 +277,10 @@ def shear_area(row, column_a, column_b):
     if row[column_b] != "Overstressed. Please re-assess":
         for dia in shear_dia_list:
             for spacing in shear_spacing_list:
-                if (1000 / spacing) * (np.pi * (dia / 2) ** 2)*legs > row[column_b]:
-                   area = round((1000 / spacing) * (np.pi * (dia / 2) ** 2)*legs)
-                   break
-            if area: # If shear_string is assigned, break the outer loop as well.
+                if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * legs > row[column_b]:
+                    area = round((1000 / spacing) * (np.pi * (dia / 2) ** 2) * legs)
+                    break
+            if area:  # If shear_string is assigned, break the outer loop as well.
                 break
         return area
     else:
