@@ -134,7 +134,7 @@ def rebar_area(row, column_a, column_b, column_c):
 
 # this function subtracts the provided by the needed to provide the residual.
 def residual_rebar(row, column_a, column_b, column_c, column_d):
-    if row[column_a] == "Overstressed. Please re-assess":
+    if row[column_a] == "Overstressed. Please re-assess" or row[column_c] == "Overstressed. Please re-assess":
         return "Overstressed. Please re-assess"
     else:
         bottom_residual = row[column_a] - row[column_b]
@@ -155,7 +155,7 @@ def side_face_reinf(row, column_a, column_b, column_c, column_d):
     spacing_list = [250, 200, 150]
     dia_list = [12,16, 20, 25, 32]
     if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
-        f = lambda x, y: round(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
+        f = lambda x, y: np.floor(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
         spacing_string = ""
         if row[column_a] != 0:
             for dia in dia_list:
@@ -186,7 +186,7 @@ def side_face_area(row, column_a, column_b, column_c, column_d):
     spacing_list = [250, 200, 150]
     dia_list = [12, 16, 20, 25, 32]
     if row[column_d] == "False" and row[column_c] != "Overstressed. Please re-assess":
-        f = lambda x, y: round(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
+        f = lambda x, y: np.floor(2 * (row[column_b] / x)) * (np.pi * (y / 2) ** 2)
         spacing_area = 0
         if row[column_a] != 0:
             for dia in dia_list:
@@ -208,7 +208,7 @@ def side_face_area(row, column_a, column_b, column_c, column_d):
 def shear_area_req(row, column_a, column_b):
     required = 0
     if row[column_a] == "O/S":
-        required = 2 * row[column_b]
+        required = "Overstressed. Please re-assess"
     else:
         required = row[column_a] + 2 * row[column_b]
     return required
@@ -219,37 +219,35 @@ def req_legs(column_a):
     leg = 0
     if column_a <= 400:
         leg = 2
-    elif column_a > 400 and column_a <= 800:
+    elif column_a > 400:
         leg = 4
-    else:
-        leg = 6
+    # else:
+    #     leg = 6
     return leg
 
 
 # this function loops through dia's and spacing to meet the required shear area
 # x = spacing, y = dia for lambda function
-def shear_string(row, column_a, column_b, column_c):
+def shear_string(row, column_a, column_b):
     shear_dia_list = [12, 16, 20, 25]
     shear_spacing_list = [250, 200, 150, 100]
     shear_string = ""
     legs = row[column_a]
-    if row[column_c] != "O/S":
-        f = lambda x, y: (1000 / x) * (np.pi * (y / 2) ** 2)
+
+    if row[column_b] != "Overstressed. Please re-assess":
         for dia in shear_dia_list:
             for spacing in shear_spacing_list:
-                true = round(f(spacing, dia))
-                if true * legs > row[column_b]:
-                    shear_string = f"{legs}L-T{dia}@{spacing}s"
-                    break
-            else:
-                continue
-            break
+                if (1000 / spacing) * (np.pi * (dia / 2) ** 2)*legs > row[column_b]:
+                   shear_string = f"{legs}L-T{dia}@{spacing}s"
+                   break
+            if shear_string: # If shear_string is assigned, break the outer loop as well.
+                break
         return shear_string
     else:
-        return "Overstressed. Please reasses"
+        return "Overstressed. Please reassess"
 
 
-def shear_area(row, column_a, column_b, column_c):
+def shear_area(row, column_a, column_b):
     """loops through dias and spacing to meet required shear area
 
     Args:
@@ -264,20 +262,18 @@ def shear_area(row, column_a, column_b, column_c):
     shear_dia_list = [12, 16, 20, 25]
     shear_spacing_list = [250, 200, 150, 100]
     area = 0
-    if row[column_c] != "O/S":
-        f = lambda x, y: (1000 / x) * (np.pi * (y / 2) ** 2)
+    legs = row[column_a]
+    if row[column_b] != "Overstressed. Please re-assess":
         for dia in shear_dia_list:
             for spacing in shear_spacing_list:
-                true = round(f(spacing, dia))
-                if true * row[column_a] > row[column_b]:
-                    area = true * row[column_a]
-                    break
-            else:
-                continue
-            break
+                if (1000 / spacing) * (np.pi * (dia / 2) ** 2)*legs > row[column_b]:
+                   area = round((1000 / spacing) * (np.pi * (dia / 2) ** 2)*legs)
+                   break
+            if area: # If shear_string is assigned, break the outer loop as well.
+                break
         return area
     else:
-        return "Overstressed. Please reasses"
+        return "Overstressed. Please reassess"
 
 
 # this function cleans the cell of unnamed: 3 column to provide the width of each beam.

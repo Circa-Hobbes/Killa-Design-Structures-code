@@ -352,230 +352,231 @@ side_face_df = v7_flexural_df.drop(
 ).copy()
 
 
-# take the maximum side face reinforcement schedule
-def replace_with_max(group):
-    # Convert 'Side Face Reinforcement Provided (mm2)' to numeric, making non-numeric values NaN
-    group["Side Face Reinforcement Provided (mm2)"] = pd.to_numeric(
-        group["Side Face Reinforcement Provided (mm2)"], errors="coerce"
-    )
+# # take the maximum side face reinforcement schedule
+# def replace_with_max(group):
+#     # Convert 'Side Face Reinforcement Provided (mm2)' to numeric, making non-numeric values NaN
+#     group["Side Face Reinforcement Provided (mm2)"] = pd.to_numeric(
+#         group["Side Face Reinforcement Provided (mm2)"], errors="coerce"
+#     )
 
-    # If all values are NaN, leave the group as it is
-    if group["Side Face Reinforcement Provided (mm2)"].isna().all():
-        return group
+#     # If all values are NaN, leave the group as it is
+#     if group["Side Face Reinforcement Provided (mm2)"].isna().all():
+#         return group
 
-    # Find the row with the maximum value
-    max_row = group.loc[group["Side Face Reinforcement Provided (mm2)"].idxmax()]
+#     # Find the row with the maximum value
+#     max_row = group.loc[group["Side Face Reinforcement Provided (mm2)"].idxmax()]
 
-    # Replace all values in the group with the values from the max row
-    group["Side Face Reinforcement Provided (mm2)"] = max_row[
-        "Side Face Reinforcement Provided (mm2)"
-    ]
-    group["Side Face Reinforcement Schedule"] = max_row[
-        "Side Face Reinforcement Schedule"
-    ]
-    return group
-
-
-# Create a 'Group' column for grouping
-side_face_df["Group"] = np.repeat(range(len(side_face_df) // 3), 3)
-
-# Apply the function to each group
-side_face_df = side_face_df.groupby("Group").apply(replace_with_max)
-
-# Drop the 'Group' column
-side_face_df = side_face_df.drop(columns="Group")
-
-side_face_df = side_face_df.reset_index(drop=True)
-
-# update v7_flexural_df with new side face reinf schedule
-
-side_face_df = side_face_df.drop(columns="Side Face Reinforcement Provided (mm2)")
-
-v7_flexural_df["Side Face Reinforcement Schedule"] = side_face_df[
-    "Side Face Reinforcement Schedule"
-]
+#     # Replace all values in the group with the values from the max row
+#     group["Side Face Reinforcement Provided (mm2)"] = max_row[
+#         "Side Face Reinforcement Provided (mm2)"
+#     ]
+#     group["Side Face Reinforcement Schedule"] = max_row[
+#         "Side Face Reinforcement Schedule"
+#     ]
+#     return group
 
 
-# take the maximum shear link schedule for all sides of beam
-def replace_with_max_shear(group):
-    # Convert 'Shear area provided (mm2)' to numeric, making non-numeric values NaN
-    group["Shear area provided (mm2)"] = pd.to_numeric(
-        group["Shear area provided (mm2)"], errors="coerce"
-    )
+# # Create a 'Group' column for grouping
+# side_face_df["Group"] = np.repeat(range(len(side_face_df) // 3), 3)
 
-    # If all values are NaN, leave the group as it is
-    if group["Shear area provided (mm2)"].isna().all():
-        return group
-    # If any value is NaN, replace all values with 'Over-stressed. Please reassess'
-    elif group["Shear area provided (mm2)"].isna().any():
-        group["Shear area provided (mm2)"] = "Overstressed. Please reassess"
-        group["Shear Link Schedule"] = "Overstressed. Please reassess"
-        return group
-    else:
-        # Find max value
-        max_row = group.loc[group["Shear area provided (mm2)"].idxmax()]
+# # Apply the function to each group
+# side_face_df = side_face_df.groupby("Group").apply(replace_with_max)
 
-        # replace all values in the group with the values from the max row
-        group["Shear area provided (mm2)"] = max_row["Shear area provided (mm2)"]
-        group["Shear Link Schedule"] = max_row["Shear Link Schedule"]
-        return group
+# # Drop the 'Group' column
+# side_face_df = side_face_df.drop(columns="Group")
 
+# side_face_df = side_face_df.reset_index(drop=True)
 
-# Create a 'Group' column for grouping
-v3_shear_df["Group"] = np.repeat(range(len(v3_shear_df) // 3), 3)
+# # update v7_flexural_df with new side face reinf schedule
 
-# Apply the function to each group
-v3_shear_df = v3_shear_df.groupby("Group").apply(replace_with_max_shear)
+# side_face_df = side_face_df.drop(columns="Side Face Reinforcement Provided (mm2)")
 
-# Drop the 'Group' column
-v3_shear_df = v3_shear_df.drop(columns="Group")
+# v7_flexural_df["Side Face Reinforcement Schedule"] = side_face_df[
+#     "Side Face Reinforcement Schedule"
+# ]
 
-v3_shear_df = v3_shear_df.reset_index(drop=True)
+print(side_face_df)
 
-# update v7_flexural_df with new side face reinf schedule
+# # take the maximum shear link schedule for all sides of beam
+# def replace_with_max_shear(group):
+#     # Convert 'Shear area provided (mm2)' to numeric, making non-numeric values NaN
+#     group["Shear area provided (mm2)"] = pd.to_numeric(
+#         group["Shear area provided (mm2)"], errors="coerce"
+#     )
 
-v3_shear_df = v3_shear_df.drop(columns="Shear area provided (mm2)")
+#     # If all values are NaN, leave the group as it is
+#     if group["Shear area provided (mm2)"].isna().all():
+#         return group
+#     # If any value is NaN, replace all values with 'Over-stressed. Please reassess'
+#     elif group["Shear area provided (mm2)"].isna().any():
+#         group["Shear area provided (mm2)"] = "Overstressed. Please reassess"
+#         group["Shear Link Schedule"] = "Overstressed. Please reassess"
+#         return group
+#     else:
+#         # Find max value
+#         max_row = group.loc[group["Shear area provided (mm2)"].idxmax()]
 
-
-v3_shear_df["new_index"] = np.repeat(range(len(v3_shear_df) // 3), 3)[
-    : len(v3_shear_df)
-]
-v3_shear_df_grouped = (
-    v3_shear_df.groupby("new_index")["Shear Link Schedule"]
-    .apply(list)
-    .apply(pd.Series)
-    .reset_index(drop=True)
-)
-
-v7_flexural_df["new_index"] = np.repeat(range(len(v7_flexural_df) // 3), 3)[
-    : len(v7_flexural_df)
-]
-v7_flexural_df_grouped_Bottom_Rebar = (
-    v7_flexural_df.groupby("new_index")["Bottom Rebar Schedule"]
-    .apply(list)
-    .apply(pd.Series)
-    .reset_index(drop=True)
-    .copy()
-)
-v7_flexural_df_grouped_Top_Rebar = (
-    v7_flexural_df.groupby("new_index")["Top Rebar Schedule"]
-    .apply(list)
-    .apply(pd.Series)
-    .reset_index(drop=True)
-    .copy()
-)
-v7_flexural_df_grouped_Side_Rebar = (
-    v7_flexural_df.groupby("new_index")["Side Face Reinforcement Schedule"]
-    .apply(list)
-    .apply(pd.Series)
-    .reset_index(drop=True)
-    .copy()
-)
-
-beam_schedule_df[("Bottom Reinforcement", "Left (BL)")].update(
-    v7_flexural_df_grouped_Bottom_Rebar[0]
-)
-beam_schedule_df[("Bottom Reinforcement", "Middle (B)")].update(
-    v7_flexural_df_grouped_Bottom_Rebar[1]
-)
-beam_schedule_df[("Bottom Reinforcement", "Right (BR)")].update(
-    v7_flexural_df_grouped_Bottom_Rebar[2]
-)
-beam_schedule_df[("Top Reinforcement", "Left (TL)")].update(
-    v7_flexural_df_grouped_Top_Rebar[0]
-)
-beam_schedule_df[("Top Reinforcement", "Middle (T)")].update(
-    v7_flexural_df_grouped_Top_Rebar[1]
-)
-beam_schedule_df[("Top Reinforcement", "Right (TR)")].update(
-    v7_flexural_df_grouped_Top_Rebar[2]
-)
-beam_schedule_df[("Side Face Reinforcement", "Left")].update(
-    v7_flexural_df_grouped_Side_Rebar[0]
-)
-beam_schedule_df[("Side Face Reinforcement", "")].update(
-    v7_flexural_df_grouped_Side_Rebar[1]
-)
-beam_schedule_df[("Side Face Reinforcement", "Right")].update(
-    v7_flexural_df_grouped_Side_Rebar[2]
-)
-beam_schedule_df[("Shear links", "Left (H)")].update(v3_shear_df_grouped[0])
-beam_schedule_df[("Shear links", "Middle (J)")].update(v3_shear_df_grouped[1])
-beam_schedule_df[("Shear links", "Right (K)")].update(v3_shear_df_grouped[2])
-
-# drop the left and right subcolumns of side face reinforcement in beam_schedule_df
-beam_schedule_final_df = beam_schedule_df.copy()
-beam_schedule_final_df = beam_schedule_final_df.drop(
-    [("Side Face Reinforcement", "Left"), ("Side Face Reinforcement", "Right")], axis=1
-)
-
-beam_schedule_final_df.columns = beam_schedule_final_df.columns.set_levels(
-    [level.str.strip() for level in beam_schedule_final_df.columns.levels], level=[0, 1]
-)
-beam_schedule_final_df.apply(
-    rebar_func.quick_side_check,
-    args=(
-        ("Dimensions", "Depth (mm)"),
-        ("Side Face Reinforcement", ""),
-    ),
-    axis=1,
-)
+#         # replace all values in the group with the values from the max row
+#         group["Shear area provided (mm2)"] = max_row["Shear area provided (mm2)"]
+#         group["Shear Link Schedule"] = max_row["Shear Link Schedule"]
+#         return group
 
 
-def export_file(beam_schedule_df):
-    root = tk.Tk()
-    root.withdraw()
-    filepath = asksaveasfilename(defaultextension=".xlsx")
-    root.destroy()
-    if filepath:
-        beam_schedule_final_df.to_excel(filepath, index=True)
-        sys.exit()
+# # Create a 'Group' column for grouping
+# v3_shear_df["Group"] = np.repeat(range(len(v3_shear_df) // 3), 3)
+
+# # Apply the function to each group
+# v3_shear_df = v3_shear_df.groupby("Group").apply(replace_with_max_shear)
+
+# # Drop the 'Group' column
+# v3_shear_df = v3_shear_df.drop(columns="Group")
+
+# v3_shear_df = v3_shear_df.reset_index(drop=True)
+
+# # update v7_flexural_df with new side face reinf schedule
+
+# v3_shear_df = v3_shear_df.drop(columns="Shear area provided (mm2)")
 
 
-def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
+# v3_shear_df["new_index"] = np.repeat(range(len(v3_shear_df) // 3), 3)[
+#     : len(v3_shear_df)
+# ]
+# v3_shear_df_grouped = (
+#     v3_shear_df.groupby("new_index")["Shear Link Schedule"]
+#     .apply(list)
+#     .apply(pd.Series)
+#     .reset_index(drop=True)
+# )
 
-    return os.path.join(base_path, relative_path)
+# v7_flexural_df["new_index"] = np.repeat(range(len(v7_flexural_df) // 3), 3)[
+#     : len(v7_flexural_df)
+# ]
+# v7_flexural_df_grouped_Bottom_Rebar = (
+#     v7_flexural_df.groupby("new_index")["Bottom Rebar Schedule"]
+#     .apply(list)
+#     .apply(pd.Series)
+#     .reset_index(drop=True)
+#     .copy()
+# )
+# v7_flexural_df_grouped_Top_Rebar = (
+#     v7_flexural_df.groupby("new_index")["Top Rebar Schedule"]
+#     .apply(list)
+#     .apply(pd.Series)
+#     .reset_index(drop=True)
+#     .copy()
+# )
+# v7_flexural_df_grouped_Side_Rebar = (
+#     v7_flexural_df.groupby("new_index")["Side Face Reinforcement Schedule"]
+#     .apply(list)
+#     .apply(pd.Series)
+#     .reset_index(drop=True)
+#     .copy()
+# )
+
+# beam_schedule_df[("Bottom Reinforcement", "Left (BL)")].update(
+#     v7_flexural_df_grouped_Bottom_Rebar[0]
+# )
+# beam_schedule_df[("Bottom Reinforcement", "Middle (B)")].update(
+#     v7_flexural_df_grouped_Bottom_Rebar[1]
+# )
+# beam_schedule_df[("Bottom Reinforcement", "Right (BR)")].update(
+#     v7_flexural_df_grouped_Bottom_Rebar[2]
+# )
+# beam_schedule_df[("Top Reinforcement", "Left (TL)")].update(
+#     v7_flexural_df_grouped_Top_Rebar[0]
+# )
+# beam_schedule_df[("Top Reinforcement", "Middle (T)")].update(
+#     v7_flexural_df_grouped_Top_Rebar[1]
+# )
+# beam_schedule_df[("Top Reinforcement", "Right (TR)")].update(
+#     v7_flexural_df_grouped_Top_Rebar[2]
+# )
+# beam_schedule_df[("Side Face Reinforcement", "Left")].update(
+#     v7_flexural_df_grouped_Side_Rebar[0]
+# )
+# beam_schedule_df[("Side Face Reinforcement", "")].update(
+#     v7_flexural_df_grouped_Side_Rebar[1]
+# )
+# beam_schedule_df[("Side Face Reinforcement", "Right")].update(
+#     v7_flexural_df_grouped_Side_Rebar[2]
+# )
+# beam_schedule_df[("Shear links", "Left (H)")].update(v3_shear_df_grouped[0])
+# beam_schedule_df[("Shear links", "Middle (J)")].update(v3_shear_df_grouped[1])
+# beam_schedule_df[("Shear links", "Right (K)")].update(v3_shear_df_grouped[2])
+
+# # drop the left and right subcolumns of side face reinforcement in beam_schedule_df
+# beam_schedule_final_df = beam_schedule_df.copy()
+# beam_schedule_final_df = beam_schedule_final_df.drop(
+#     [("Side Face Reinforcement", "Left"), ("Side Face Reinforcement", "Right")], axis=1
+# )
+
+# beam_schedule_final_df.columns = beam_schedule_final_df.columns.set_levels(
+#     [level.str.strip() for level in beam_schedule_final_df.columns.levels], level=[0, 1]
+# )
+# beam_schedule_final_df.apply(
+#     rebar_func.quick_side_check,
+#     args=(
+#         ("Dimensions", "Depth (mm)"),
+#         ("Side Face Reinforcement", ""),
+#     ),
+#     axis=1,
+# )
 
 
-# create main program
-gui = tk.Tk()
-
-# create window geometry and title
-gui.geometry("900x350")
-gui.title("Beam Reinforcement Scheduling Program - Made by Adnan @ KLD")
-
-# Create title inside program
-main_title = tk.Label(
-    gui,
-    text="Beam Reinforcement Scheduling Program. Made by Adnan @ KLD",
-    font=("Helvetica", 18),
-)
-main_title.pack(padx=50, pady=20)
-
-# Put KLD design logo
-image_path = resource_path(
-    "killa-design.jpg"
-)  # use the resource_path function to get the correct path
-kld_logo = Image.open(image_path)  # Then use this path to open the image
-photo = ImageTk.PhotoImage(kld_logo)
-label = tk.Label(gui, image=photo)
-label.pack(side="top", fill="both", padx=50)
-
-# Put the button to ask for the name of the completed excel file and to download it
-
-final_button = tk.Button(
-    gui,
-    text="Please download Completed Beam Reinforcement Schedule",
-    font=("Helvetica", 15),
-    command=lambda: export_file(beam_schedule_df),
-)
-final_button.pack(padx=50, pady=10)
+# def export_file(beam_schedule_df):
+#     root = tk.Tk()
+#     root.withdraw()
+#     filepath = asksaveasfilename(defaultextension=".xlsx")
+#     root.destroy()
+#     if filepath:
+#         beam_schedule_final_df.to_excel(filepath, index=True)
+#         sys.exit()
 
 
-gui.mainloop()
+# def resource_path(relative_path):
+#     """Get absolute path to resource, works for dev and for PyInstaller"""
+#     try:
+#         # PyInstaller creates a temp folder and stores path in _MEIPASS
+#         base_path = sys._MEIPASS
+#     except Exception:
+#         base_path = os.path.abspath(".")
+
+#     return os.path.join(base_path, relative_path)
+
+
+# # create main program
+# gui = tk.Tk()
+
+# # create window geometry and title
+# gui.geometry("900x350")
+# gui.title("Beam Reinforcement Scheduling Program - Made by Adnan @ KLD")
+
+# # Create title inside program
+# main_title = tk.Label(
+#     gui,
+#     text="Beam Reinforcement Scheduling Program. Made by Adnan @ KLD",
+#     font=("Helvetica", 18),
+# )
+# main_title.pack(padx=50, pady=20)
+
+# # Put KLD design logo
+# image_path = resource_path(
+#     "killa-design.jpg"
+# )  # use the resource_path function to get the correct path
+# kld_logo = Image.open(image_path)  # Then use this path to open the image
+# photo = ImageTk.PhotoImage(kld_logo)
+# label = tk.Label(gui, image=photo)
+# label.pack(side="top", fill="both", padx=50)
+
+# # Put the button to ask for the name of the completed excel file and to download it
+
+# final_button = tk.Button(
+#     gui,
+#     text="Please download Completed Beam Reinforcement Schedule",
+#     font=("Helvetica", 15),
+#     command=lambda: export_file(beam_schedule_df),
+# )
+# final_button.pack(padx=50, pady=10)
+
+
+# gui.mainloop()
