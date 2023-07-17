@@ -226,9 +226,9 @@ def shear_area_req(row, column_a, column_b):
 # this function returns the total shear legs based on the width of the beam
 def req_legs(column_a):
     leg = 0
-    if column_a <= 400:
+    if column_a <= 600:
         leg = 2
-    elif column_a > 400:
+    elif column_a > 600:
         leg = 4
     # else:
     #     leg = 6
@@ -247,7 +247,7 @@ def shear_string(row, column_a, column_b):
         for dia in shear_dia_list:
             for spacing in shear_spacing_list:
                 if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * legs > row[column_b]:
-                    shear_string = f"{legs}L-T{dia}@{spacing}s"
+                    shear_string = f"{legs}L-T{dia}@{spacing}"
                     break
             if (
                 shear_string
