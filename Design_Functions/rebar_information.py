@@ -224,14 +224,16 @@ def shear_area_req(row, column_a, column_b):
 
 
 # this function returns the total shear legs based on the width of the beam
+# column_a is the width and column_b is depth, column_c is required shear area
+# assumes fc = 45 mpa
 def req_legs(column_a):
     leg = 0
-    if column_a <= 600:
+    if column_a < 400:
         leg = 2
-    elif column_a > 600:
+    elif column_a >= 400:
         leg = 4
-    # else:
-    #     leg = 6
+    elif column_a >= 800:
+        leg = 6
     return leg
 
 
@@ -372,3 +374,49 @@ def quick_side_check(row, column_a, column_b):
         pass
     elif row[column_a, sub_a] <= 600:
         row[column_b, sub_b] = " "
+
+
+def torsion_check(row, column_a, column_b, column_c):
+    """checks if outer two legs can withstand torsion
+
+    Args:
+        row (_type_): df
+        column_a (_type_): width
+        column_b (_type_): shear reinforcement provided
+        column_c (_type_): shear torsion requirement
+
+    Returns:
+        _type_: _description_
+    """
+    check = ""
+    if row[column_b] == "Overstressed. Please reassess":
+        check = "Overstressed. Please reassess"
+    else:
+        if row[column_a] < 400:
+            if row[column_b] > row[column_c]:
+                check = "OK"
+            else:
+                check = "FAIL"
+        elif row[column_a] >= 400 and row[column_a] < 800:
+            if row[column_b] / 2 > row[column_c]:
+                check = "OK"
+            else:
+                check = "FAIL"
+        elif row[column_a] >= 800:
+            if row[column_b] / 3 > row[column_c]:
+                check = "OK"
+            else:
+                check = "FAIL"
+    return check
+
+
+# create a function to handle strings and integers in a group
+def handle_group(g):
+    # check if the group contains any strings
+    strings = g[g.apply(lambda x: isinstance(x, str))]
+    if not strings.empty:
+        # if there are strings, return the first string
+        return strings.iloc[0]
+    else:
+        # if there are no strings, return the max value
+        return g.max()

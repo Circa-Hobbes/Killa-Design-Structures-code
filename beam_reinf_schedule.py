@@ -3,7 +3,7 @@ import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pathlib
 import pandas as pd
-import Design_Functions.rebar_information as rebar_func
+import design_functions.rebar_information as rebar_func
 import importlib
 import numpy as np
 from PIL import Image, ImageTk
@@ -96,6 +96,7 @@ columns = pd.MultiIndex.from_tuples(
         ("Shear links", "Left (H)"),
         ("Shear links", "Middle (J)"),
         ("Shear links", "Right (K)"),
+        ("Torsion Check", ""),
     ]
 )
 beam_schedule_df = pd.DataFrame(columns=columns)
@@ -461,6 +462,48 @@ v3_shear_df_grouped = (
     .reset_index(drop=True)
 )
 
+# make a width df
+width_df = v2_shear_df["Width (mm)"]
+
+# take the width df and return the third row
+clean_width_df = width_df.iloc[::3]
+clean_width_df = clean_width_df.reset_index(drop=True)
+
+# make a torsion df
+torsion_df = v1_shear_df["Unnamed: 10"]
+torsion_df.columns = ["Torsion Requirement"]
+
+# take the torsion df and make a group
+group_key = torsion_df.index // 3
+
+# group torsion df and take maximum value of each group
+clean_torsion_df = torsion_df.groupby(group_key).transform("max")
+
+# take the clean torsion df and return the third row
+clean_torsion_df = clean_torsion_df.iloc[::3]
+clean_torsion_df = clean_torsion_df.reset_index(drop=True)
+
+# make a shear provided df
+shear_prov_df = v2_shear_df["Shear area provided (mm2)"]
+
+# take the shear provided df and make a group
+shear_key = shear_prov_df.index // 3
+
+# group the shear provided df and run function to get either string or max integer
+clean_shear_df = shear_prov_df.groupby(shear_key).transform(rebar_func.handle_group)
+clean_shear_df = clean_shear_df.iloc[::3]
+clean_shear_df = clean_shear_df.reset_index(drop=True)
+
+# concatenate the three clean dfs
+torsion_check_df = pd.concat([clean_width_df, clean_shear_df, clean_torsion_df], axis=1)
+
+# rename the columns
+torsion_check_df.columns = [
+    "Width (mm)",
+    "Shear Area Provided (mm2)",
+    "Torsional Requirement",
+]
+
 v7_flexural_df["new_index"] = np.repeat(range(len(v7_flexural_df) // 3), 3)[
     : len(v7_flexural_df)
 ]
@@ -516,6 +559,13 @@ beam_schedule_df[("Side Face Reinforcement", "Right")].update(
 beam_schedule_df[("Shear links", "Left (H)")].update(v3_shear_df_grouped[0])
 beam_schedule_df[("Shear links", "Middle (J)")].update(v3_shear_df_grouped[1])
 beam_schedule_df[("Shear links", "Right (K)")].update(v3_shear_df_grouped[2])
+
+# check if outer two links can withstand torsion
+beam_schedule_df[("Torsion Check", "")] = torsion_check_df.apply(
+    rebar_func.torsion_check,
+    axis=1,
+    args=("Width (mm)", "Shear Area Provided (mm2)", "Torsional Requirement"),
+)
 
 # drop the left and right subcolumns of side face reinforcement in beam_schedule_df
 beam_schedule_final_df = beam_schedule_df.copy()
