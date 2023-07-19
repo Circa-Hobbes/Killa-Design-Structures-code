@@ -230,7 +230,7 @@ def req_legs(column_a):
     leg = 0
     if column_a < 400:
         leg = 2
-    elif column_a >= 400:
+    elif column_a >= 400 and column_a < 800:
         leg = 4
     elif column_a >= 800:
         leg = 6
@@ -398,12 +398,12 @@ def torsion_check(row, column_a, column_b, column_c):
             else:
                 check = "FAIL"
         elif row[column_a] >= 400 and row[column_a] < 800:
-            if row[column_b] / 2 > row[column_c]:
+            if row[column_b] / 4 > row[column_c]:
                 check = "OK"
             else:
                 check = "FAIL"
         elif row[column_a] >= 800:
-            if row[column_b] / 3 > row[column_c]:
+            if row[column_b] / 6 > row[column_c]:
                 check = "OK"
             else:
                 check = "FAIL"
