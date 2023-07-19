@@ -3,7 +3,7 @@ import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pathlib
 import pandas as pd
-import Design_Functions.rebar_information as rebar_func
+import design_functions.rebar_information as rebar_func
 import importlib
 import numpy as np
 from PIL import Image, ImageTk
