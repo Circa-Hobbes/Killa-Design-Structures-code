@@ -164,7 +164,13 @@ v6_flexural_df.insert(8, "Residual Rebar (mm2)", "-")
 #     "Top Reinforcement",
 # )
 
-v6_flexural_df = rebar_func.add_long_rebar(v6_flexural_df, 'Depth (mm)', 'Torsional Rebar (mm2)', 'Bottom reinforcement', 'Top Reinforcement')
+v6_flexural_df = rebar_func.add_long_rebar(
+    v6_flexural_df,
+    "Depth (mm)",
+    "Torsional Rebar (mm2)",
+    "Bottom reinforcement",
+    "Top Reinforcement",
+)
 
 # v6_flexural_df.loc[:, 'Bottom Reinforcement'] = rebar_func.side_face_assessment(
 #     v6_flexural_df,
@@ -293,7 +299,7 @@ v2_shear_df.loc[:, "Shear Link Schedule"] = v2_shear_df.apply(
     args=(
         "Required Shear Legs",
         "Required Shear Area (mm2)",
-        ),
+    ),
 )
 v2_shear_df.insert(7, "Shear area provided (mm2)", "-")
 v2_shear_df.loc[:, "Shear area provided (mm2)"] = v2_shear_df.apply(
@@ -302,7 +308,6 @@ v2_shear_df.loc[:, "Shear area provided (mm2)"] = v2_shear_df.apply(
     args=(
         "Required Shear Legs",
         "Required Shear Area (mm2)",
-        
     ),
 )
 
