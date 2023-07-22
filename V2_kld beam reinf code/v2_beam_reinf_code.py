@@ -32,6 +32,6 @@ initial_shear_df = pd.read_excel(excel_file, sheet_name=1)
 initial_flexural_df = initial_flexural_df.drop([0, 1])
 initial_shear_df = initial_shear_df.drop([0, 1])
 
-# Reset indexes in place for easier manipulation.
+# Reset indices in place for easier manipulation.
 initial_flexural_df = initial_flexural_df.reset_index(drop=True)
 initial_shear_df = initial_shear_df.reset_index(drop=True)
