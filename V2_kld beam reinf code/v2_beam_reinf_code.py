@@ -1,15 +1,27 @@
 # import Design_Functions.rebar_information as rebar_func
-# import design_classes.beam_calculator_class as beam
+from beam_calculator_class import Beam
 import pandas as pd
-import importlib
+
+# import importlib
 import numpy as np
 import tkinter as tk
-import sys
+
+# import sys
 import importlib
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 # importlib.reload(rebar_func)
-# importlib.reload(beam)
+
+
+# Create an instance of the Beam class for when the script is run, not when the module
+# is imported.
+def create_instance():
+    beam = Beam()
+    return beam
+
+
+if __name__ == "__main__":
+    instance = create_instance()
 
 
 # Create function to import ETABS beam design extraction spreadsheet.
@@ -35,3 +47,7 @@ initial_shear_df = initial_shear_df.drop([0, 1])
 # Reset indices in place for easier manipulation.
 initial_flexural_df = initial_flexural_df.reset_index(drop=True)
 initial_shear_df = initial_shear_df.reset_index(drop=True)
+
+# Slice through flexural dataframe to obtain all the ETAB beam IDs.
+flexural = Beam(initial_flexural_df)
+e_id = flexural.obtain_id()
