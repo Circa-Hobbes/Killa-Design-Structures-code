@@ -1,4 +1,4 @@
-# import math
+import math
 import numpy as np
 import pandas as pd
 
@@ -8,7 +8,22 @@ class Beam:
     reinforcement schedule.
     """
 
-    def __init__(self, df, id, width, depth, pos_flex_combo, neg_flex_combo):
+    def __init__(
+        self,
+        df,
+        id,
+        width,
+        depth,
+        pos_flex_combo,
+        neg_flex_combo,
+        req_top_flex_reinf,
+        req_bot_flex_reinf,
+        req_flex_torsion_reinf,
+        shear_combo,
+        torsion_combo,
+        req_shear_reinf,
+        req_torsion_reinf,
+    ):
         """Begin by initializing attributes that define the makeup of a reinforced
         concrete beam.
         """
@@ -18,6 +33,13 @@ class Beam:
         self.depth = depth
         self.pos_flex_combo = pos_flex_combo
         self.neg_flex_combo = neg_flex_combo
+        self.req_top_flex_reinf = req_top_flex_reinf
+        self.req_bot_flex_reinf = req_bot_flex_reinf
+        self.req_flex_torsion_reinf = req_flex_torsion_reinf
+        self.shear_combo = shear_combo
+        self.torsion_combo = torsion_combo
+        self.req_shear_reinf = req_shear_reinf
+        self.req_torsion_reinf = req_torsion_reinf
 
     def __str__(self):
         """Create a string describing the attributes of each instantiated beam.
@@ -29,7 +51,14 @@ class Beam:
 Width: {self.width}mm 
 Depth: {self.depth}mm
 Positive Flexural Combo: {self.pos_flex_combo}
-Negative Flexural Combo: {self.neg_flex_combo}"""
+Negative Flexural Combo: {self.neg_flex_combo}
+Required Top Flexural Reinforcement: {self.req_top_flex_reinf}mm^2
+Required Bottom Flexural Reinforcement: {self.req_bot_flex_reinf}mm^2
+Required Flexural Torsion Reinforcement: {self.req_flex_torsion_reinf}mm^2
+Shear Combo: {self.shear_combo}
+Torsion Combo: {self.torsion_combo}
+Required Shear Reinforcement: {self.req_shear_reinf}mm^2/m
+Required Torsion Reinforcement: {self.req_torsion_reinf}mm^2/m"""
 
     @staticmethod
     def get_width(width):
@@ -72,7 +101,7 @@ Negative Flexural Combo: {self.neg_flex_combo}"""
         return int(true_depth)
 
     @staticmethod
-    def check_flex_combo(combo_list):
+    def check_combo(combo_list):
         """This function checks if any of the flexural combos in the list is overstressed.
 
         Args:

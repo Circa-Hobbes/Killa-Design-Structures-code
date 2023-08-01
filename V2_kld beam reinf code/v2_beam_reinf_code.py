@@ -11,9 +11,37 @@ import importlib
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 
-# Create all instances, i.e. etabs id's of the Beam class when the script is run.
-def create_instance(df, id, width, depth, pos_flex_combo, neg_flex_combo):
-    beam = Beam(df, id, width, depth, pos_flex_combo, neg_flex_combo)
+# Create all instances of Beam class.
+def create_instance(
+    df,
+    id,
+    width,
+    depth,
+    pos_flex_combo,
+    neg_flex_combo,
+    req_top_flex_reinf,
+    req_bot_flex_reinf,
+    req_flex_torsion_reinf,
+    shear_combo,
+    torsion_combo,
+    req_shear_reinf,
+    req_torsion_reinf,
+):
+    beam = Beam(
+        df,
+        id,
+        width,
+        depth,
+        pos_flex_combo,
+        neg_flex_combo,
+        req_top_flex_reinf,
+        req_bot_flex_reinf,
+        req_flex_torsion_reinf,
+        shear_combo,
+        torsion_combo,
+        req_shear_reinf,
+        req_torsion_reinf,
+    )
     return beam
 
 
@@ -78,17 +106,148 @@ if __name__ == "__main__":
     ]
 
     # Slice through the flexural df and retrieve whether is it overstressed in positive combo.
-    positive_flex_combo = Beam.check_flex_combo(nested_pos_combo_list)
+    positive_flex_combo = Beam.check_combo(nested_pos_combo_list)
 
     # Slice through the flexural df and retrieve whether it is overstressed in negative combo.
-    negative_flex_combo = Beam.check_flex_combo(nested_neg_combo_list)
+    negative_flex_combo = Beam.check_combo(nested_neg_combo_list)
+
+    # Take the required top flexural reinforcement and put it in a nested list.
+    # Index 0 is left, Index 1 is middle, and Index 2 is right.
+    top_flex_reinf_needed = initial_flexural_df["Unnamed: 7"].tolist()
+    top_flex_reinf_needed = [
+        top_flex_reinf_needed[i : i + 3]
+        for i in range(0, len(top_flex_reinf_needed), 3)
+    ]
+    # Check if any of the beams are overstressed. If they are, the values get replaced with O/S.
+    top_flex_reinf_needed = [
+        [
+            "O/S" if str(element).strip().lower() in ["o/s", "nan"] else element
+            for element in sublist
+        ]
+        for sublist in top_flex_reinf_needed
+    ]
+
+    # Repeat the same as above but for required bottom flexural reinforcement.
+    bot_flex_reinf_needed = initial_flexural_df["Unnamed: 10"].tolist()
+    bot_flex_reinf_needed = [
+        bot_flex_reinf_needed[i : i + 3]
+        for i in range(0, len(bot_flex_reinf_needed), 3)
+    ]
+    bot_flex_reinf_needed = [
+        [
+            "O/S" if str(element).strip().lower() in ["o/s", "nan"] else element
+            for element in sublist
+        ]
+        for sublist in bot_flex_reinf_needed
+    ]
+
+    # Take the required flexural torsion reinforcement and put it in a nested list.
+    # Index 0 is left, Index 1 is middle, and Index 2 is right.
+    flex_torsion_reinf_needed = initial_shear_df["Unnamed: 13"].tolist()
+    flex_torsion_reinf_needed = [
+        flex_torsion_reinf_needed[i : i + 3]
+        for i in range(0, len(flex_torsion_reinf_needed), 3)
+    ]
+
+    # Check if any of the beams are overstressed in torsion. If they are, values get replaced with O/S.
+    flex_torsion_reinf_needed = [
+        [
+            "O/S" if str(element).strip().lower() in ["o/s", "nan"] else element
+            for element in sublist
+        ]
+        for sublist in flex_torsion_reinf_needed
+    ]
+
+    # Take each beam's shear combo and put it in a nested list.
+    shear_combo_list = initial_shear_df["Unnamed: 6"].tolist()
+    nested_shear_combo = [
+        shear_combo_list[i : i + 3] for i in range(0, len(shear_combo_list), 3)
+    ]
+
+    # Take the nested list and return OK or OS as a string in a list.
+    nested_shear_combo = [
+        "O/S"
+        if any(str(element).strip().lower() in ["o/s", "nan"] for element in sublist)
+        else "OK"
+        for sublist in nested_shear_combo
+    ]
+
+    # Apply the Beam class method to retrieve whether it is overstressed in shear.
+    shear_combo_check = Beam.check_combo(nested_shear_combo)
+
+    # Repeat the same as shear combo, except for torsion combo.
+    torsion_combo_list = initial_shear_df["Unnamed: 12"].tolist()
+    nested_torsion_combo = [
+        torsion_combo_list[i : i + 3] for i in range(0, len(torsion_combo_list), 3)
+    ]
+
+    nested_torsion_combo = [
+        "O/S"
+        if any(str(element).strip().lower() in ["o/s", "nan"] for element in sublist)
+        else "OK"
+        for sublist in nested_torsion_combo
+    ]
+
+    torsion_combo_check = Beam.check_combo(nested_torsion_combo)
+
+    # Take the required shear reinforcement and put it in a nested list.
+    # Index 0 is left, Index 1 is middle, and Index 2 is right.
+    shear_reinf_needed = initial_shear_df["Unnamed: 7"].tolist()
+    shear_reinf_needed = [
+        shear_reinf_needed[i : i + 3] for i in range(0, len(shear_reinf_needed), 3)
+    ]
+
+    # Check if any of the beams are overstressed in shear. If they are, values get replaced with O/S.
+    shear_reinf_needed = [
+        [
+            "O/S" if str(element).strip().lower() in ["o/s", "nan"] else element
+            for element in sublist
+        ]
+        for sublist in shear_reinf_needed
+    ]
+
+    # Repeat the same as required shear reinforcement but for required torsion reinforcement.
+    torsion_reinf_needed = initial_shear_df["Unnamed: 10"].tolist()
+    torsion_reinf_needed = [
+        torsion_reinf_needed[i : i + 3] for i in range(0, len(torsion_reinf_needed), 3)
+    ]
+    torsion_reinf_needed = [
+        [
+            "O/S" if str(element).strip().lower() in ["o/s", "nan"] else element
+            for element in sublist
+        ]
+        for sublist in torsion_reinf_needed
+    ]
 
     # Call create_instance function and create instances of all etabs ids.
     beam_instances = [
         create_instance(
-            initial_flexural_df, e_id, width, depth, pos_flex_combo, neg_flex_combo
+            initial_flexural_df,
+            e_id,
+            width,
+            depth,
+            pos_flex_combo,
+            neg_flex_combo,
+            req_top_flex_reinf,
+            req_bot_flex_reinf,
+            req_flex_torsion_reinf,
+            shear_combo,
+            torsion_combo,
+            req_shear_reinf,
+            req_torsion_reinf,
         )
-        for e_id, width, depth, pos_flex_combo, neg_flex_combo in zip(
-            e_ids, beam_widths, beam_depths, positive_flex_combo, negative_flex_combo
+        for e_id, width, depth, pos_flex_combo, neg_flex_combo, req_top_flex_reinf, req_bot_flex_reinf, req_flex_torsion_reinf, shear_combo, torsion_combo, req_shear_reinf, req_torsion_reinf in zip(
+            e_ids,
+            beam_widths,
+            beam_depths,
+            positive_flex_combo,
+            negative_flex_combo,
+            top_flex_reinf_needed,
+            bot_flex_reinf_needed,
+            flex_torsion_reinf_needed,
+            shear_combo_check,
+            torsion_combo_check,
+            shear_reinf_needed,
+            torsion_reinf_needed,
         )
     ]
