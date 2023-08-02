@@ -13,7 +13,6 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 # Create all instances of Beam class.
 def create_instance(
-    df,
     id,
     width,
     depth,
@@ -28,7 +27,6 @@ def create_instance(
     req_torsion_reinf,
 ):
     beam = Beam(
-        df,
         id,
         width,
         depth,
@@ -219,10 +217,11 @@ if __name__ == "__main__":
         for sublist in torsion_reinf_needed
     ]
 
-    # Call create_instance function and create instances of all etabs ids.
+    empty_var = ""
+
+    # Call create_instance function and create instances of all beams.
     beam_instances = [
         create_instance(
-            initial_flexural_df,
             e_id,
             width,
             depth,
@@ -251,3 +250,15 @@ if __name__ == "__main__":
             torsion_reinf_needed,
         )
     ]
+
+    # Begin with for loop and create attributes for each beam instance to undertake calculations.
+    for beam in beam_instances:
+        # First get the longitudinal rebar count.
+        beam.get_long_count()
+
+        # Split the torsion reinforcement to the top and bottom rebar if the depth > 600mm.
+        beam.flex_torsion_splitting()
+
+        # Begin calculating the required top and bottom longitudinal reinforcement.
+        beam.get_top_flex_rebar_string()
+        beam.get_bot_flex_rebar_string()
