@@ -40,11 +40,23 @@ class Beam:
         self.req_torsion_reinf = req_torsion_reinf
         self.flex_rebar_count = None
         self.flex_top_left_rebar_string = None
+        self.flex_top_left_rebar_area = None
         self.flex_top_middle_rebar_string = None
+        self.flex_top_middle_rebar_area = None
         self.flex_top_right_rebar_string = None
+        self.flex_top_right_rebar_area = None
         self.flex_bot_left_rebar_string = None
+        self.flex_bot_left_rebar_area = None
         self.flex_bot_middle_rebar_string = None
+        self.flex_bot_middle_rebar_area = None
         self.flex_bot_right_rebar_string = None
+        self.flex_bot_right_rebar_area = None
+        self.left_residual_rebar = None
+        self.middle_residual_rebar = None
+        self.right_residual_rebar = None
+        self.req_total_left_shear_reinf = 0
+        self.req_total_middle_shear_reinf = 0
+        self.req_total_right_shear_reinf = 0
 
     def __str__(self):
         """Create a string describing the attributes of each instantiated beam.
@@ -71,13 +83,21 @@ Required Shear Reinforcement: {self.req_shear_reinf} mm^2/m
 Required Torsion Reinforcement: {self.req_torsion_reinf} mm^2/m
 
 Calculated Longitudinal Rebar Count: {self.flex_rebar_count}
-Provided Longitudinal Top Left Reinforcement: {self.flex_top_left_rebar_string}
-Provided Longitudinal Top Middle Reinforcement: {self.flex_top_middle_rebar_string}
-Provided Longitudinal Top Right Reinforcement: {self.flex_top_right_rebar_string}
+Provided Longitudinal Top Left Reinforcement: {self.flex_top_left_rebar_string} / {self.flex_top_left_rebar_area} mm^2
+Provided Longitudinal Top Middle Reinforcement: {self.flex_top_middle_rebar_string} / {self.flex_top_middle_rebar_area} mm^2
+Provided Longitudinal Top Right Reinforcement: {self.flex_top_right_rebar_string} / {self.flex_top_right_rebar_area} mm^2
 
-Provided Longitudinal Bottom Left Reinforcement: {self.flex_bot_left_rebar_string}
-Provided Longitudinal Bottom Middle Reinforcement: {self.flex_bot_middle_rebar_string}
-Provided Longitudinal Bottom Right Reinforcement: {self.flex_bot_right_rebar_string}"""
+Provided Longitudinal Bottom Left Reinforcement: {self.flex_bot_left_rebar_string} / {self.flex_bot_left_rebar_area} mm^2
+Provided Longitudinal Bottom Middle Reinforcement: {self.flex_bot_middle_rebar_string} / {self.flex_bot_middle_rebar_area} mm^2
+Provided Longitudinal Bottom Right Reinforcement: {self.flex_bot_right_rebar_string} / {self.flex_bot_right_rebar_area} mm^2
+
+Left Residual Rebar: {self.left_residual_rebar} mm^2
+Middle Residual Rebar: {self.middle_residual_rebar} mm^2
+Right Residual Rebar: {self.right_residual_rebar} mm^2
+
+Required Left Shear Reinforcement: {self.req_total_left_shear_reinf}
+Required Middle Shear Reinforcement: {self.req_total_middle_shear_reinf}
+Required Right Shear Reinforcement: {self.req_total_right_shear_reinf}"""
 
     @staticmethod
     def get_width(width):
@@ -191,6 +211,44 @@ Provided Longitudinal Bottom Right Reinforcement: {self.flex_bot_right_rebar_str
         self.flex_top_middle_rebar_string = target[1]
         self.flex_top_right_rebar_string = target[2]
 
+    def get_top_flex_rebar_area(self):
+        """This method loops through the required top flexural reinforcement and provides the calculated area
+        for each beam schedule. Once calculated, the value
+        for each section of the beam is indexed to its relevant attribute.
+        """
+        dia_list = [16, 20, 25, 32]
+        target = self.req_top_flex_reinf.copy()
+        if self.neg_flex_combo == "False":
+            for index, req in enumerate(target):
+                for dia_1 in dia_list:
+                    if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
+                        target[index] = (
+                            np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
+                        )
+                        break
+                    for dia_2 in dia_list:
+                        if (
+                            (np.floor(np.pi * (dia_1 / 2) ** 2)) * self.flex_rebar_count
+                        ) + (
+                            np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
+                        ) > req:
+                            target[index] = (
+                                (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                * self.flex_rebar_count
+                            ) + (
+                                np.floor(np.pi * (dia_2 / 2) ** 2)
+                                * self.flex_rebar_count
+                            )
+                            break
+                for index, item in enumerate(target):
+                    if item == "":
+                        target[index] = "Increase rebar count or re-assess"
+        else:
+            target = ["Overstressed. Please re-assess"] * len(target)
+        self.flex_top_left_rebar_area = target[0]
+        self.flex_top_middle_rebar_area = target[1]
+        self.flex_top_right_rebar_area = target[2]
+
     def get_bot_flex_rebar_string(self):
         """This method loops through the required bottom flexural reinforcement and provides a string
         containing the schedule for each part of the beam. Once the string has been made, the schedule
@@ -222,3 +280,97 @@ Provided Longitudinal Bottom Right Reinforcement: {self.flex_bot_right_rebar_str
         self.flex_bot_left_rebar_string = target[0]
         self.flex_bot_middle_rebar_string = target[1]
         self.flex_bot_right_rebar_string = target[2]
+
+    def get_bot_flex_rebar_area(self):
+        """This method loops through the required bottom flexural reinforcement and provides the calculated area
+        for each beam schedule. Once calculated, the value
+        for each section of the beam is indexed to its relevant attribute.
+        """
+        dia_list = [16, 20, 25, 32]
+        target = self.req_bot_flex_reinf.copy()
+        if self.pos_flex_combo == "False":
+            for index, req in enumerate(target):
+                for dia_1 in dia_list:
+                    if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
+                        target[index] = (
+                            np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
+                        )
+                        break
+                    for dia_2 in dia_list:
+                        if (
+                            (np.floor(np.pi * (dia_1 / 2) ** 2)) * self.flex_rebar_count
+                        ) + (
+                            np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
+                        ) > req:
+                            target[index] = (
+                                (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                * self.flex_rebar_count
+                            ) + (
+                                np.floor(np.pi * (dia_2 / 2) ** 2)
+                                * self.flex_rebar_count
+                            )
+                            break
+                for index, item in enumerate(target):
+                    if item == "":
+                        target[index] = "Increase rebar count or re-assess"
+        else:
+            target = ["Overstressed. Please re-assess"] * len(target)
+        self.flex_bot_left_rebar_area = target[0]
+        self.flex_bot_middle_rebar_area = target[1]
+        self.flex_bot_right_rebar_area = target[2]
+
+    def get_residual_rebar(self):
+        """This method takes the obtained flexural rebar area in both the top and bottom and subtracts them by
+        their relevant required area. It then adds the remaining top and bottom residual together.
+        """
+        if self.pos_flex_combo != "True" or self.neg_flex_combo != "True":
+            top_left_residual = (
+                self.flex_top_left_rebar_area - self.req_top_flex_reinf[0]
+            )
+            top_middle_residual = (
+                self.flex_top_middle_rebar_area - self.req_top_flex_reinf[1]
+            )
+            top_right_residual = (
+                self.flex_top_right_rebar_area - self.req_top_flex_reinf[2]
+            )
+            bot_left_residual = (
+                self.flex_bot_left_rebar_area - self.req_bot_flex_reinf[0]
+            )
+            bot_middle_residual = (
+                self.flex_bot_middle_rebar_area - self.req_bot_flex_reinf[1]
+            )
+            bot_right_residual = (
+                self.flex_bot_right_rebar_area - self.req_bot_flex_reinf[2]
+            )
+            self.left_residual_rebar = top_left_residual + bot_left_residual
+            self.middle_residual_rebar = top_middle_residual + bot_middle_residual
+            self.right_residual_rebar = top_right_residual + bot_right_residual
+        else:
+            self.left_residual_rebar = 0
+            self.middle_residual_rebar = 0
+            self.right_residual_rebar = 0
+
+    def get_total_shear_req(self):
+        """This method calls the required shear and torsion reinforcement attributes and calculates
+        the total shear reinforcement required. It also checks against the combos and returns whether
+        it is O/S or not.
+        """
+        if self.shear_combo == "False" and self.torsion_combo == "False":
+            shear_list = [
+                a + 2 * b for a, b in zip(self.req_shear_reinf, self.req_torsion_reinf)
+            ]
+            self.req_total_left_shear_reinf = shear_list[0]
+            self.req_total_middle_shear_reinf = shear_list[1]
+            self.req_total_right_shear_reinf = shear_list[2]
+        elif self.shear_combo == "False" and self.torsion_combo == "True":
+            self.req_total_left_shear_reinf = "O/S in Torsion"
+            self.req_total_middle_shear_reinf = "O/S in Torsion"
+            self.req_total_right_shear_reinf = "O/S in Torsion"
+        elif self.shear_combo == "True" and self.torsion_combo == "False":
+            self.req_total_left_shear_reinf = "O/S in Shear"
+            self.req_total_middle_shear_reinf = "O/S in Shear"
+            self.req_total_right_shear_reinf = "O/S in Shear"
+        else:
+            self.req_total_left_shear_reinf = "O/S in Shear and Torsion"
+            self.req_total_middle_shear_reinf = "O/S in Shear and Torsion"
+            self.req_total_right_shear_reinf = "O/S in Shear and Torsion"

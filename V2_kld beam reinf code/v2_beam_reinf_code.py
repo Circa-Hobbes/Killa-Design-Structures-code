@@ -256,9 +256,18 @@ if __name__ == "__main__":
         # First get the longitudinal rebar count.
         beam.get_long_count()
 
-        # Split the torsion reinforcement to the top and bottom rebar if the depth > 600mm.
+        # Split the torsion reinforcement to the top and bottom rebar if the depth <= 600mm.
         beam.flex_torsion_splitting()
 
         # Begin calculating the required top and bottom longitudinal reinforcement.
         beam.get_top_flex_rebar_string()
+        beam.get_top_flex_rebar_area()
+
         beam.get_bot_flex_rebar_string()
+        beam.get_bot_flex_rebar_area()
+
+        # Calculate the residual rebar obtained from the provided against the required.
+        beam.get_residual_rebar()
+
+        # Calculate the total required shear reinforcement including shear and torsion.
+        beam.get_total_shear_req()

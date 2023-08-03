@@ -72,7 +72,6 @@ def rebar_string(row, column_a, column_b, column_c):
                 rebar_string = f"{row[column_a]}T{dia_1}"
                 break  # stop looping once we found a match
             for dia_2 in dia_list:
-                if (
                     np.floor(np.pi * (dia_1 / 2) ** 2) * row[column_a]
                     + np.floor(np.pi * (dia_2 / 2) ** 2) * row[column_a]
                     > row[column_b]
