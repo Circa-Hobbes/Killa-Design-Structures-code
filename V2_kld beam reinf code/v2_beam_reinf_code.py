@@ -217,8 +217,6 @@ if __name__ == "__main__":
         for sublist in torsion_reinf_needed
     ]
 
-    empty_var = ""
-
     # Call create_instance function and create instances of all beams.
     beam_instances = [
         create_instance(
@@ -269,5 +267,12 @@ if __name__ == "__main__":
         # Calculate the residual rebar obtained from the provided against the required.
         beam.get_residual_rebar()
 
+        # Calculate the required shear legs based on the beams width.
+        beam.get_shear_legs()
+
         # Calculate the total required shear reinforcement including shear and torsion.
         beam.get_total_shear_req()
+
+        beam.get_shear_string()
+
+        print(beam.shear_left_string, beam.shear_middle_string, beam.shear_right_string)

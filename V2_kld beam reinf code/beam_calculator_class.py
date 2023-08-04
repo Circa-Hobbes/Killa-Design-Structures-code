@@ -57,6 +57,13 @@ class Beam:
         self.req_total_left_shear_reinf = 0
         self.req_total_middle_shear_reinf = 0
         self.req_total_right_shear_reinf = 0
+        self.req_shear_legs = 0
+        self.shear_left_string = None
+        self.shear_Left_area = None
+        self.shear_middle_string = None
+        self.shear_middle_area = None
+        self.shear_right_string = None
+        self.shear_right_area = None
 
     def __str__(self):
         """Create a string describing the attributes of each instantiated beam.
@@ -83,6 +90,7 @@ Required Shear Reinforcement: {self.req_shear_reinf} mm^2/m
 Required Torsion Reinforcement: {self.req_torsion_reinf} mm^2/m
 
 Calculated Longitudinal Rebar Count: {self.flex_rebar_count}
+
 Provided Longitudinal Top Left Reinforcement: {self.flex_top_left_rebar_string} / {self.flex_top_left_rebar_area} mm^2
 Provided Longitudinal Top Middle Reinforcement: {self.flex_top_middle_rebar_string} / {self.flex_top_middle_rebar_area} mm^2
 Provided Longitudinal Top Right Reinforcement: {self.flex_top_right_rebar_string} / {self.flex_top_right_rebar_area} mm^2
@@ -95,9 +103,15 @@ Left Residual Rebar: {self.left_residual_rebar} mm^2
 Middle Residual Rebar: {self.middle_residual_rebar} mm^2
 Right Residual Rebar: {self.right_residual_rebar} mm^2
 
+Required Shear Legs: {self.req_shear_legs}
+
 Required Left Shear Reinforcement: {self.req_total_left_shear_reinf}
 Required Middle Shear Reinforcement: {self.req_total_middle_shear_reinf}
-Required Right Shear Reinforcement: {self.req_total_right_shear_reinf}"""
+Required Right Shear Reinforcement: {self.req_total_right_shear_reinf}
+
+Provided Left Shear Reinforcement: {self.shear_left_string} mm^2
+Provided Middle Shear Reinforcement: {self.shear_middle_string} mm^2
+Provided Right Shear Reinforcement: {self.shear_right_string} mm^2"""
 
     @staticmethod
     def get_width(width):
@@ -374,3 +388,39 @@ Required Right Shear Reinforcement: {self.req_total_right_shear_reinf}"""
             self.req_total_left_shear_reinf = "O/S in Shear and Torsion"
             self.req_total_middle_shear_reinf = "O/S in Shear and Torsion"
             self.req_total_right_shear_reinf = "O/S in Shear and Torsion"
+
+    def get_shear_legs(self):
+        """This method calculates the required shear legs based on the width of the instanced beams.
+        It is currently crude and needs updating to be in line with ACI 318-19.
+        """
+        if self.width < 400:
+            self.req_shear_legs = 2
+        elif self.width >= 400 and self.width < 800:
+            self.req_shear_legs = 4
+        elif self.width >= 800:
+            self.req_shear_legs = 6
+
+    def get_shear_string(self):
+        shear_dia_list = [12, 16, 20, 25]
+        shear_spacing_list = [250, 200, 150, 100]
+        target = [
+            self.req_total_left_shear_reinf,
+            self.req_total_middle_shear_reinf,
+            self.req_total_right_shear_reinf,
+        ]
+        if self.shear_combo == "False" and self.torsion_combo == "False":
+            for index, req in enumerate(target):
+                for dia in shear_dia_list:
+                    for spacing in shear_spacing_list:
+                        if (1000 / spacing) * (
+                            np.pi * (dia / 2) ** 2
+                        ) * self.req_shear_legs > req:  # type: ignore
+                            target[index] = f"{self.req_shear_legs}L-T{dia}@{spacing}"
+                            break
+                    if target[index]:
+                        break
+        else:
+            target = ["Overstressed. Please re-assess"] * len(target)
+        self.shear_left_string = target[0]
+        self.shear_middle_string = target[1]
+        self.shear_right_string = target[2]
