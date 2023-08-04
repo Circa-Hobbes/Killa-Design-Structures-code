@@ -401,6 +401,7 @@ Provided Right Shear Reinforcement: {self.shear_right_string} mm^2"""
             self.req_shear_legs = 6
 
     def get_shear_string(self):
+        """Currently not working as intended."""
         shear_dia_list = [12, 16, 20, 25]
         shear_spacing_list = [250, 200, 150, 100]
         target = [
