@@ -273,6 +273,13 @@ if __name__ == "__main__":
         # Calculate the total required shear reinforcement including shear and torsion.
         beam.get_total_shear_req()
 
+        # Calculate the provided shear reinforcement string and area.
         beam.get_shear_string()
+        beam.get_shear_area()
 
-        print(beam.shear_left_string, beam.shear_middle_string, beam.shear_right_string)
+        # Calculate the allowable side face clear space in beams which have a depth greater than 600mm.
+        beam.get_side_face_clear_space()
+
+        # Calculate the provided side face reinforcement string and area.
+        beam.get_side_face_string()
+        beam.get_side_face_area()

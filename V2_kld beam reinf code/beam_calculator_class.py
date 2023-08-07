@@ -64,6 +64,13 @@ class Beam:
         self.shear_middle_area = None
         self.shear_right_string = None
         self.shear_right_area = None
+        self.side_face_clear_space = None
+        self.side_face_left_string = None
+        self.side_face_left_area = None
+        self.side_face_middle_string = None
+        self.side_face_middle_area = None
+        self.side_face_right_string = None
+        self.side_face_right_area = None
 
     def __str__(self):
         """Create a string describing the attributes of each instantiated beam.
@@ -109,9 +116,15 @@ Required Left Shear Reinforcement: {self.req_total_left_shear_reinf}
 Required Middle Shear Reinforcement: {self.req_total_middle_shear_reinf}
 Required Right Shear Reinforcement: {self.req_total_right_shear_reinf}
 
-Provided Left Shear Reinforcement: {self.shear_left_string} mm^2
-Provided Middle Shear Reinforcement: {self.shear_middle_string} mm^2
-Provided Right Shear Reinforcement: {self.shear_right_string} mm^2"""
+Provided Left Shear Reinforcement: {self.shear_left_string} / {self.shear_Left_area} mm^2
+Provided Middle Shear Reinforcement: {self.shear_middle_string} / {self.shear_middle_area} mm^2
+Provided Right Shear Reinforcement: {self.shear_right_string} / {self.shear_right_area} mm^2
+
+Calculated Side Face Clear Space: {self.side_face_clear_space} mm
+
+Provided Left Side Face Reinforcement: {self.side_face_left_string} / {self.side_face_left_area} mm^2
+Provided Middle Side Face Reinforcement: {self.side_face_middle_string} / {self.side_face_middle_area} mm^2
+Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.side_face_right_area} mm^2"""
 
     @staticmethod
     def get_width(width):
@@ -401,7 +414,10 @@ Provided Right Shear Reinforcement: {self.shear_right_string} mm^2"""
             self.req_shear_legs = 6
 
     def get_shear_string(self):
-        """Currently not working as intended."""
+        """This method calculates the required shear reinforcement string.
+        It defines two lists: one diameter list, ranging from 12 to 25mm dia, and another spacing
+        list from 250 to 100mm. It utilises a truthy statement to ensure that the right
+        diameter and spacing combination is found for the shear reinforcement."""
         shear_dia_list = [12, 16, 20, 25]
         shear_spacing_list = [250, 200, 150, 100]
         target = [
@@ -411,17 +427,187 @@ Provided Right Shear Reinforcement: {self.shear_right_string} mm^2"""
         ]
         if self.shear_combo == "False" and self.torsion_combo == "False":
             for index, req in enumerate(target):
+                found = False
                 for dia in shear_dia_list:
+                    if found:
+                        break
                     for spacing in shear_spacing_list:
                         if (1000 / spacing) * (
                             np.pi * (dia / 2) ** 2
                         ) * self.req_shear_legs > req:  # type: ignore
                             target[index] = f"{self.req_shear_legs}L-T{dia}@{spacing}"
+                            found = True
                             break
-                    if target[index]:
-                        break
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
         self.shear_left_string = target[0]
         self.shear_middle_string = target[1]
         self.shear_right_string = target[2]
+
+    def get_shear_area(self):
+        """This method calculates the required shear reinforcement area.
+        It defines two lists: one diameter list, ranging from 12 to 25mm dia, and another spacing
+        list from 250 to 100mm. It utilises a truthy statement to ensure that the right
+        diameter and spacing combination is found for the shear reinforcement."""
+        shear_dia_list = [12, 16, 20, 25]
+        shear_spacing_list = [250, 200, 150, 100]
+        target = [
+            self.req_total_left_shear_reinf,
+            self.req_total_middle_shear_reinf,
+            self.req_total_right_shear_reinf,
+        ]
+        if self.shear_combo == "False" and self.torsion_combo == "False":
+            for index, req in enumerate(target):
+                found = False
+                for dia in shear_dia_list:
+                    if found:
+                        break
+                    for spacing in shear_spacing_list:
+                        if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * self.req_shear_legs > req:  # type: ignore
+                            target[index] = round(
+                                (1000 / spacing)
+                                * (np.pi * (dia / 2) ** 2)
+                                * self.req_shear_legs
+                            )
+                            found = True
+                            break
+        else:
+            target = ["Overstressed. Please re-assess"] * len(target)
+        self.shear_Left_area = target[0]
+        self.shear_middle_area = target[1]
+        self.shear_right_area = target[2]
+
+    def get_side_face_clear_space(self):
+        """This method calculates the side face clear space. It assumes a cover of 40mm.
+        It takes the maximum first layer flexural diameter from both the top and bottom. It also
+        takes the maximum shear diameter. All of these are subtracted by the depth of the instanced
+        beam to acquire the allowable side face clear space.
+        """
+        if self.depth > 600:
+            if (
+                self.neg_flex_combo == "False"
+                and self.pos_flex_combo == "False"
+                and self.shear_combo == "False"
+                and self.torsion_combo == "False"
+            ):
+                cleaned_top_flex_dia_list = [
+                    self.flex_top_left_rebar_string[2:4],  # type: ignore
+                    self.flex_top_middle_rebar_string[2:4],  # type: ignore
+                    self.flex_top_right_rebar_string[2:4],  # type: ignore
+                ]
+                top_flex_dia_list = [int(x) for x in cleaned_top_flex_dia_list]
+                max_top_dia = round(max(top_flex_dia_list))
+
+                cleaned_bot_flex_dia_list = [
+                    self.flex_bot_left_rebar_string[2:4],  # type: ignore
+                    self.flex_bot_middle_rebar_string[2:4],  # type: ignore
+                    self.flex_bot_right_rebar_string[2:4],  # type: ignore
+                ]
+                bot_flex_dia_list = [int(x) for x in cleaned_bot_flex_dia_list]
+                max_bot_dia = round(max(bot_flex_dia_list))
+
+                cleaned_shear_dia_list = [
+                    self.shear_left_string[4:6],  # type: ignore
+                    self.shear_middle_string[4:6],  # type: ignore
+                    self.shear_right_string[4:6],  # type: ignore
+                ]
+                shear_dia_list = [int(x) for x in cleaned_shear_dia_list]
+                max_shear_dia = round(max(shear_dia_list))
+
+                self.side_face_clear_space = round(
+                    self.depth
+                    - (2 * 40)
+                    - (2 * max_shear_dia)
+                    - max_top_dia
+                    - max_bot_dia
+                )
+            else:
+                self.side_face_clear_space = "Overstressed. Please reassess"
+        else:
+            self.side_face_clear_space = "Not needed"
+
+    def get_side_face_string(self):
+        """This method calculates the side face reinforcement string for beam instances with a depth greater
+        than 600mm. It subtracts the required torsion from the residual calculated from the flexural reinforcement.
+        It also checks if the combos are overstressed or not."""
+        spacing_list = [250, 200, 150]
+        dia_list = [12, 16, 20, 25, 32]
+        combined_residual = [
+            self.left_residual_rebar,
+            self.middle_residual_rebar,
+            self.right_residual_rebar,
+        ]
+        target_torsion = [
+            a - b for a, b in zip(self.req_torsion_reinf, combined_residual)
+        ]
+        if self.depth > 600:
+            if (
+                self.neg_flex_combo == "False"
+                and self.pos_flex_combo == "False"
+                and self.shear_combo == "False"
+                and self.torsion_combo == "False"
+            ):
+                for index, req in enumerate(target_torsion):
+                    found = False
+                    for dia in dia_list:
+                        if found:
+                            break
+                        for spacing in spacing_list:
+                            if (
+                                np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
+                                * (np.pi * (dia / 2) ** 2)
+                                > req
+                            ):
+                                target_torsion[index] = f"T{dia}@{spacing} EF"
+                                found = True
+                                break
+            else:
+                target_torsion = ["Overstressed. Please reassess"] * len(target_torsion)
+        else:
+            target_torsion = ["Not needed"] * len(target_torsion)
+        self.side_face_left_string = target_torsion[0]
+        self.side_face_middle_string = target_torsion[1]
+        self.side_face_right_string = target_torsion[2]
+
+    def get_side_face_area(self):
+        spacing_list = [250, 200, 150]
+        dia_list = [12, 16, 20, 25, 32]
+        combined_residual = [
+            self.left_residual_rebar,
+            self.middle_residual_rebar,
+            self.right_residual_rebar,
+        ]
+        target_torsion = [
+            a - b for a, b in zip(self.req_torsion_reinf, combined_residual)
+        ]
+        if self.depth > 600:
+            if (
+                self.neg_flex_combo == "False"
+                and self.pos_flex_combo == "False"
+                and self.shear_combo == "False"
+                and self.torsion_combo == "False"
+            ):
+                for index, req in enumerate(target_torsion):
+                    found = False
+                    for dia in dia_list:
+                        if found:
+                            break
+                        for spacing in spacing_list:
+                            if (
+                                np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
+                                * (np.pi * (dia / 2) ** 2)
+                                > req
+                            ):
+                                target_torsion[index] = np.floor(
+                                    (2 * (self.side_face_clear_space / spacing))  # type: ignore
+                                    * (np.pi * (dia / 2) ** 2)
+                                )
+                                found = True
+                                break
+            else:
+                target_torsion = ["Overstressed. Please reassess"] * len(target_torsion)
+        else:
+            target_torsion = ["Not needed"] * len(target_torsion)
+        self.side_face_left_area = target_torsion[0]
+        self.side_face_middle_area = target_torsion[1]
+        self.side_face_right_area = target_torsion[2]
