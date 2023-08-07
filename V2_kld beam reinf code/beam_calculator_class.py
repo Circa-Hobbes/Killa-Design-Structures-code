@@ -570,6 +570,7 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
         self.side_face_right_string = target_torsion[2]
 
     def get_side_face_area(self):
+        """Put docstring"""
         spacing_list = [250, 200, 150]
         dia_list = [12, 16, 20, 25, 32]
         combined_residual = [
