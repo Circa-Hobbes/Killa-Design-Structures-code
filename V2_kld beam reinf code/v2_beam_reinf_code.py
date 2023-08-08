@@ -277,9 +277,15 @@ if __name__ == "__main__":
         beam.get_shear_string()
         beam.get_shear_area()
 
+        # Grab the index of the shear reinforcement with the highest area.
+        beam.get_index_for_shear_reinf()
+
         # Calculate the allowable side face clear space in beams which have a depth greater than 600mm.
         beam.get_side_face_clear_space()
 
         # Calculate the provided side face reinforcement string and area.
         beam.get_side_face_string()
         beam.get_side_face_area()
+
+        # Grab the index of the side face reinforcement with the highest area.
+        beam.get_index_for_side_face_reinf()

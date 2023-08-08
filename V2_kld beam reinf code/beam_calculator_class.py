@@ -39,6 +39,18 @@ class Beam:
         self.req_shear_reinf = req_shear_reinf
         self.req_torsion_reinf = req_torsion_reinf
         self.flex_rebar_count = None
+        self.flex_top_left_dia = 0
+        self.flex_top_left_dia_two = 0
+        self.flex_top_middle_dia = 0
+        self.flex_top_middle_dia_two = 0
+        self.flex_top_right_dia = 0
+        self.flex_top_right_dia_two = 0
+        self.flex_bot_left_dia = 0
+        self.flex_bot_left_dia_two = 0
+        self.flex_bot_middle_dia = 0
+        self.flex_bot_middle_dia_two = 0
+        self.flex_bot_right_dia = 0
+        self.flex_bot_right_dia_two = 0
         self.flex_top_left_rebar_string = None
         self.flex_top_left_rebar_area = None
         self.flex_top_middle_rebar_string = None
@@ -58,12 +70,21 @@ class Beam:
         self.req_total_middle_shear_reinf = 0
         self.req_total_right_shear_reinf = 0
         self.req_shear_legs = 0
+        self.shear_left_dia = 0
+        self.shear_middle_dia = 0
+        self.shear_right_dia = 0
         self.shear_left_string = None
-        self.shear_Left_area = None
+        self.shear_left_area = None
         self.shear_middle_string = None
         self.shear_middle_area = None
         self.shear_right_string = None
         self.shear_right_area = None
+        self.selected_shear_left_string = None
+        self.selected_shear_left_area = None
+        self.selected_shear_middle_string = None
+        self.selected_shear_middle_area = None
+        self.selected_shear_right_string = None
+        self.selected_right_middle_area = None
         self.side_face_clear_space = None
         self.side_face_left_string = None
         self.side_face_left_area = None
@@ -71,6 +92,8 @@ class Beam:
         self.side_face_middle_area = None
         self.side_face_right_string = None
         self.side_face_right_area = None
+        self.selected_side_face_reinforcement_string = None
+        self.selected_side_face_reinforcement_area = None
 
     def __str__(self):
         """Create a string describing the attributes of each instantiated beam.
@@ -116,15 +139,21 @@ Required Left Shear Reinforcement: {self.req_total_left_shear_reinf}
 Required Middle Shear Reinforcement: {self.req_total_middle_shear_reinf}
 Required Right Shear Reinforcement: {self.req_total_right_shear_reinf}
 
-Provided Left Shear Reinforcement: {self.shear_left_string} / {self.shear_Left_area} mm^2
+Provided Left Shear Reinforcement: {self.shear_left_string} / {self.shear_left_area} mm^2
 Provided Middle Shear Reinforcement: {self.shear_middle_string} / {self.shear_middle_area} mm^2
 Provided Right Shear Reinforcement: {self.shear_right_string} / {self.shear_right_area} mm^2
+
+Selected Left Shear Reinforcement: {self.selected_shear_left_string} / {self.selected_shear_left_area} mm^2
+Selected Middle Shear Reinforcement: {self.selected_shear_middle_string} / {self.selected_shear_middle_area} mm^2
+Selected Right Shear Reinforcement: {self.selected_shear_right_string} / {self.selected_shear_right_area} mm^2
 
 Calculated Side Face Clear Space: {self.side_face_clear_space} mm
 
 Provided Left Side Face Reinforcement: {self.side_face_left_string} / {self.side_face_left_area} mm^2
 Provided Middle Side Face Reinforcement: {self.side_face_middle_string} / {self.side_face_middle_area} mm^2
-Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.side_face_right_area} mm^2"""
+Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.side_face_right_area} mm^2
+
+Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_string} / {self.selected_side_face_reinforcement_area} mm^2"""
 
     @staticmethod
     def get_width(width):
@@ -213,27 +242,56 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
         for each section of the beam is indexed to its relevant attribute."""
         dia_list = [16, 20, 25, 32]
         target = self.req_top_flex_reinf.copy()
+
         if self.neg_flex_combo == "False":
             for index, req in enumerate(target):
+                found = False
                 for dia_1 in dia_list:
-                    if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
+                    if (
+                        np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
+                    ) > req:
                         target[index] = f"{self.flex_rebar_count}T{dia_1}"
+                        found = True
+                        # Assign the computed diameter to the appropriate attributes immediately after determining them
+                        if index == 0:
+                            self.flex_top_left_dia = dia_1
+                            self.flex_top_left_dia_two = 0
+                        elif index == 1:
+                            self.flex_top_middle_dia = dia_1
+                            self.flex_top_middle_dia_two = 0
+                        elif index == 2:
+                            self.flex_top_right_dia = dia_1
+                            self.flex_top_right_dia_two = 0
                         break
                     for dia_2 in dia_list:
                         if (
                             np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
                             + np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
-                            > req
-                        ):
+                        ) > req:
                             target[
                                 index
                             ] = f"{self.flex_rebar_count}T{dia_1} + {self.flex_rebar_count}T{dia_2}"
+                            found = True
+                            # Assign the computed diameters to the appropriate attributes immediately after determining them
+                            if index == 0:
+                                self.flex_top_left_dia = dia_1
+                                self.flex_top_left_dia_two = dia_2
+                            elif index == 1:
+                                self.flex_top_middle_dia = dia_1
+                                self.flex_top_middle_dia_two = dia_2
+                            elif index == 2:
+                                self.flex_top_right_dia = dia_1
+                                self.flex_top_right_dia_two = dia_2
                             break
-                for index, item in enumerate(target):
-                    if item == "":
-                        target[index] = "Increase rebar count or re-assess"
+                    if found:
+                        break
+
+            for index, item in enumerate(target):
+                if item == "":
+                    target[index] = "Increase rebar count or re-assess"
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
+
         self.flex_top_left_rebar_string = target[0]
         self.flex_top_middle_rebar_string = target[1]
         self.flex_top_right_rebar_string = target[2]
@@ -283,11 +341,24 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
         """
         dia_list = [16, 20, 25, 32]
         target = self.req_bot_flex_reinf.copy()
+
         if self.pos_flex_combo == "False":
             for index, req in enumerate(target):
+                found = False
                 for dia_1 in dia_list:
                     if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
                         target[index] = f"{self.flex_rebar_count}T{dia_1}"
+                        found = True
+                        # Assign the computed diameter to appropriate attributes after determining them
+                        if index == 0:
+                            self.flex_bot_left_dia = dia_1
+                            self.flex_bot_left_dia_two = 0
+                        elif index == 1:
+                            self.flex_bot_middle_dia = dia_1
+                            self.flex_bot_middle_dia_two = 0
+                        elif index == 2:
+                            self.flex_bot_right_dia = dia_1
+                            self.flex_bot_right_dia_two = 0
                         break
                     for dia_2 in dia_list:
                         if (
@@ -298,10 +369,22 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
                             target[
                                 index
                             ] = f"{self.flex_rebar_count}T{dia_1} + {self.flex_rebar_count}T{dia_2}"
+                            found = True
+                            if index == 0:
+                                self.flex_bot_left_dia = dia_1
+                                self.flex_bot_left_dia_two = dia_2
+                            elif index == 1:
+                                self.flex_bot_middle_dia = dia_1
+                                self.flex_bot_midle_dia_two = dia_2
+                            elif index == 2:
+                                self.flex_bot_right_dia = dia_1
+                                self.flex_bot_right_dia_two = dia_2
                             break
-                for index, item in enumerate(target):
-                    if item == "":
-                        target[index] = "Increase rebar count or re-assess"
+                    if found:
+                        break
+            for index, item in enumerate(target):
+                if item == "":
+                    target[index] = "Increase rebar count or re-assess"
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
         self.flex_bot_left_rebar_string = target[0]
@@ -426,7 +509,7 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
             self.req_total_right_shear_reinf,
         ]
         if self.shear_combo == "False" and self.torsion_combo == "False":
-            for index, req in enumerate(target):
+            for index, (req, tor_req) in enumerate(zip(target, self.req_torsion_reinf)):
                 found = False
                 for dia in shear_dia_list:
                     if found:
@@ -434,9 +517,19 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
                     for spacing in shear_spacing_list:
                         if (1000 / spacing) * (
                             np.pi * (dia / 2) ** 2
-                        ) * self.req_shear_legs > req:  # type: ignore
+                        ) * self.req_shear_legs > req and (  # type: ignore
+                            1000 / spacing
+                        ) * (
+                            np.pi * (dia / 2) ** 2
+                        ) * 2 > tor_req:  # type: ignore
                             target[index] = f"{self.req_shear_legs}L-T{dia}@{spacing}"
                             found = True
+                            if index == 0:
+                                self.shear_left_dia = dia
+                            elif index == 1:
+                                self.shear_middle_dia = dia
+                            elif index == 2:
+                                self.shear_right_dia = dia
                             break
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
@@ -457,13 +550,13 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
             self.req_total_right_shear_reinf,
         ]
         if self.shear_combo == "False" and self.torsion_combo == "False":
-            for index, req in enumerate(target):
+            for index, (req, tor_req) in enumerate(zip(target, self.req_torsion_reinf)):
                 found = False
                 for dia in shear_dia_list:
                     if found:
                         break
                     for spacing in shear_spacing_list:
-                        if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * self.req_shear_legs > req:  # type: ignore
+                        if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * self.req_shear_legs > req and (1000 / spacing) * (np.pi * (dia / 2) ** 2) * 2 > tor_req:  # type: ignore
                             target[index] = round(
                                 (1000 / spacing)
                                 * (np.pi * (dia / 2) ** 2)
@@ -473,7 +566,7 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
                             break
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
-        self.shear_Left_area = target[0]
+        self.shear_left_area = target[0]
         self.shear_middle_area = target[1]
         self.shear_right_area = target[2]
 
@@ -483,6 +576,31 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
         takes the maximum shear diameter. All of these are subtracted by the depth of the instanced
         beam to acquire the allowable side face clear space.
         """
+        dia_one_top_list = [
+            self.flex_top_left_dia,
+            self.flex_top_middle_dia,
+            self.flex_top_right_dia,
+        ]
+        dia_two_top_list = [
+            self.flex_top_left_dia_two,
+            self.flex_top_middle_dia_two,
+            self.flex_top_right_dia_two,
+        ]
+        dia_one_bot_list = [
+            self.flex_bot_left_dia,
+            self.flex_bot_middle_dia,
+            self.flex_bot_right_dia,
+        ]
+        dia_two_bot_list = [
+            self.flex_bot_left_dia_two,
+            self.flex_bot_middle_dia_two,
+            self.flex_bot_right_dia_two,
+        ]
+        dia_shear_list = [
+            self.shear_left_dia,
+            self.shear_middle_dia,
+            self.shear_right_dia,
+        ]
         if self.depth > 600:
             if (
                 self.neg_flex_combo == "False"
@@ -490,36 +608,19 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
                 and self.shear_combo == "False"
                 and self.torsion_combo == "False"
             ):
-                cleaned_top_flex_dia_list = [
-                    self.flex_top_left_rebar_string[2:4],  # type: ignore
-                    self.flex_top_middle_rebar_string[2:4],  # type: ignore
-                    self.flex_top_right_rebar_string[2:4],  # type: ignore
-                ]
-                top_flex_dia_list = [int(x) for x in cleaned_top_flex_dia_list]
-                max_top_dia = round(max(top_flex_dia_list))
-
-                cleaned_bot_flex_dia_list = [
-                    self.flex_bot_left_rebar_string[2:4],  # type: ignore
-                    self.flex_bot_middle_rebar_string[2:4],  # type: ignore
-                    self.flex_bot_right_rebar_string[2:4],  # type: ignore
-                ]
-                bot_flex_dia_list = [int(x) for x in cleaned_bot_flex_dia_list]
-                max_bot_dia = round(max(bot_flex_dia_list))
-
-                cleaned_shear_dia_list = [
-                    self.shear_left_string[4:6],  # type: ignore
-                    self.shear_middle_string[4:6],  # type: ignore
-                    self.shear_right_string[4:6],  # type: ignore
-                ]
-                shear_dia_list = [int(x) for x in cleaned_shear_dia_list]
-                max_shear_dia = round(max(shear_dia_list))
-
+                max_top_dia_one = max(dia_one_top_list)
+                max_top_dia_two = max(dia_two_top_list)
+                max_bot_dia_one = max(dia_one_bot_list)
+                max_bot_dia_two = max(dia_two_bot_list)
+                max_shear_dia = max(dia_shear_list)
                 self.side_face_clear_space = round(
                     self.depth
                     - (2 * 40)
                     - (2 * max_shear_dia)
-                    - max_top_dia
-                    - max_bot_dia
+                    - max_top_dia_one
+                    - max_top_dia_two
+                    - max_bot_dia_one
+                    - max_bot_dia_two
                 )
             else:
                 self.side_face_clear_space = "Overstressed. Please reassess"
@@ -570,7 +671,9 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
         self.side_face_right_string = target_torsion[2]
 
     def get_side_face_area(self):
-        """Put docstring"""
+        """This method calculates the side face reinforcement area for beam instances with a depth greater
+        than 600mm. It subtracts the required torsion from the residual calculated from the flexural reinforcement.
+        It also checks if the combos are overstressed or not."""
         spacing_list = [250, 200, 150]
         dia_list = [12, 16, 20, 25, 32]
         combined_residual = [
@@ -612,3 +715,63 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
         self.side_face_left_area = target_torsion[0]
         self.side_face_middle_area = target_torsion[1]
         self.side_face_right_area = target_torsion[2]
+
+    def get_index_for_side_face_reinf(self):
+        """This method gets the index of the side face reinforcement with the highest area.
+        It then takes this index and selects the side face reinforcement with the highest area as the overall
+        beam side face reinforcement.
+        """
+        side_reinf_area_list = [
+            self.side_face_left_area,
+            self.side_face_middle_area,
+            self.side_face_right_area,
+        ]
+        side_reinf_string_list = [
+            self.side_face_left_string,
+            self.side_face_middle_string,
+            self.side_face_right_string,
+        ]
+        max_side_reinf_index, max_area = max(
+            enumerate(side_reinf_area_list), key=lambda x: x[1]  # type: ignore
+        )
+        self.selected_side_face_reinforcement_area = side_reinf_area_list[
+            max_side_reinf_index
+        ]
+        self.selected_side_face_reinforcement_string = side_reinf_string_list[
+            max_side_reinf_index
+        ]
+
+    def get_index_for_shear_reinf(self):
+        shear_reinf_area_list = [
+            self.shear_left_area,
+            self.shear_middle_area,
+            self.shear_right_area,
+        ]
+        shear_reinf_string_list = [
+            self.shear_left_string,
+            self.shear_middle_string,
+            self.shear_right_string,
+        ]
+        max_shear_reinf_index, max_area = max(
+            enumerate(shear_reinf_area_list), key=lambda x: x[1]  # type: ignore
+        )
+        if shear_reinf_area_list[1] > shear_reinf_area_list[max_shear_reinf_index]:
+            self.selected_shear_left_area = shear_reinf_area_list[1]
+            self.selected_shear_left_string = shear_reinf_string_list[1]
+            self.selected_shear_middle_area = shear_reinf_area_list[1]
+            self.selected_shear_middle_string = shear_reinf_string_list[1]
+            self.selected_shear_right_area = shear_reinf_area_list[1]
+            self.selected_shear_right_string = shear_reinf_string_list[1]
+        else:
+            self.selected_shear_left_area = shear_reinf_area_list[max_shear_reinf_index]
+            self.selected_shear_left_string = shear_reinf_string_list[
+                max_shear_reinf_index
+            ]
+            self.selected_shear_middle_area = shear_reinf_area_list[1]
+            self.selected_shear_middle_string = shear_reinf_string_list[1]
+            self.selected_shear_right_area = shear_reinf_area_list[
+                max_shear_reinf_index
+            ]
+            self.selected_shear_right_string = shear_reinf_string_list[
+                max_shear_reinf_index
+            ]
