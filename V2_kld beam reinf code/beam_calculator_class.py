@@ -742,6 +742,11 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         ]
 
     def get_index_for_shear_reinf(self):
+        """This method gets the index of the shear reinforcement with the highest area.
+        If the middle index has the highest area, then all the shear reinforcement in the beam (left, middle, right)
+        are copied from the middle shear reinforcement. Otherwise, the middle shear reinforcement retains what it has
+        and the left and right reinforcement take the absolute maximum (if left is max, then right copies it and vice versa.)
+        """
         shear_reinf_area_list = [
             self.shear_left_area,
             self.shear_middle_area,
