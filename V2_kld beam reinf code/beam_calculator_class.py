@@ -1,6 +1,4 @@
-import math
 import numpy as np
-import pandas as pd
 
 
 class Beam:
@@ -639,7 +637,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.right_residual_rebar,
         ]
         target_torsion = [
-            a - b for a, b in zip(self.req_torsion_reinf, combined_residual)
+            a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)  # type: ignore
         ]
         if self.depth > 600:
             if (
@@ -682,7 +680,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.right_residual_rebar,
         ]
         target_torsion = [
-            a - b for a, b in zip(self.req_torsion_reinf, combined_residual)
+            a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)  # type: ignore
         ]
         if self.depth > 600:
             if (
