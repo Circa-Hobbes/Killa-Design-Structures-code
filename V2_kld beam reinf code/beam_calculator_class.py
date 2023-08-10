@@ -61,9 +61,9 @@ class Beam:
         self.flex_bot_middle_rebar_area = None
         self.flex_bot_right_rebar_string = None
         self.flex_bot_right_rebar_area = None
-        self.left_residual_rebar = None
-        self.middle_residual_rebar = None
-        self.right_residual_rebar = None
+        self.left_residual_rebar = 0
+        self.middle_residual_rebar = 0
+        self.right_residual_rebar = 0
         self.req_total_left_shear_reinf = 0
         self.req_total_middle_shear_reinf = 0
         self.req_total_right_shear_reinf = 0
@@ -82,7 +82,7 @@ class Beam:
         self.selected_shear_middle_string = None
         self.selected_shear_middle_area = None
         self.selected_shear_right_string = None
-        self.selected_right_middle_area = None
+        self.selected_shear_right_area = None
         self.side_face_clear_space = None
         self.side_face_left_string = None
         self.side_face_left_area = None
@@ -451,32 +451,46 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         """This method takes the obtained flexural rebar area in both the top and bottom and subtracts them by
         their relevant required area. It then adds the remaining top and bottom residual together.
         """
+        top_combined = [
+            self.flex_top_left_rebar_area,
+            self.flex_top_middle_rebar_area,
+            self.flex_top_right_rebar_area,
+        ]
+        bot_combined = [
+            self.flex_bot_left_rebar_area,
+            self.flex_bot_middle_rebar_area,
+            self.flex_bot_right_rebar_area,
+        ]
         if self.pos_flex_combo != "True" or self.neg_flex_combo != "True":
-            top_left_residual = (
-                self.flex_top_left_rebar_area - self.req_top_flex_reinf[0]
-            )
-            top_middle_residual = (
-                self.flex_top_middle_rebar_area - self.req_top_flex_reinf[1]
-            )
-            top_right_residual = (
-                self.flex_top_right_rebar_area - self.req_top_flex_reinf[2]
-            )
-            bot_left_residual = (
-                self.flex_bot_left_rebar_area - self.req_bot_flex_reinf[0]
-            )
-            bot_middle_residual = (
-                self.flex_bot_middle_rebar_area - self.req_bot_flex_reinf[1]
-            )
-            bot_right_residual = (
-                self.flex_bot_right_rebar_area - self.req_bot_flex_reinf[2]
-            )
-            self.left_residual_rebar = top_left_residual + bot_left_residual
-            self.middle_residual_rebar = top_middle_residual + bot_middle_residual
-            self.right_residual_rebar = top_right_residual + bot_right_residual
-        else:
-            self.left_residual_rebar = 0
-            self.middle_residual_rebar = 0
-            self.right_residual_rebar = 0
+            if (
+                "Increase rebar count or re-assess" not in top_combined
+                and "Increase rebar count or re-assess" not in bot_combined
+            ):
+                top_left_residual = (
+                    self.flex_top_left_rebar_area - self.req_top_flex_reinf[0]
+                )
+                top_middle_residual = (
+                    self.flex_top_middle_rebar_area - self.req_top_flex_reinf[1]
+                )
+                top_right_residual = (
+                    self.flex_top_right_rebar_area - self.req_top_flex_reinf[2]
+                )
+                bot_left_residual = (
+                    self.flex_bot_left_rebar_area - self.req_bot_flex_reinf[0]
+                )
+                bot_middle_residual = (
+                    self.flex_bot_middle_rebar_area - self.req_bot_flex_reinf[1]
+                )
+                bot_right_residual = (
+                    self.flex_bot_right_rebar_area - self.req_bot_flex_reinf[2]
+                )
+                self.left_residual_rebar = top_left_residual + bot_left_residual
+                self.middle_residual_rebar = top_middle_residual + bot_middle_residual
+                self.right_residual_rebar = top_right_residual + bot_right_residual
+            else:
+                self.left_residual_rebar = None
+                self.middle_residual_rebar = None
+                self.right_residual_rebar = None
 
     def get_total_shear_req(self):
         """This method calls the required shear and torsion reinforcement attributes and calculates
@@ -656,37 +670,45 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.middle_residual_rebar,
             self.right_residual_rebar,
         ]
-        target_torsion = [
-            a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)  # type: ignore
-        ]
-        if self.depth > 600:
-            if (
-                self.neg_flex_combo == "False"
-                and self.pos_flex_combo == "False"
-                and self.shear_combo == "False"
-                and self.torsion_combo == "False"
-            ):
-                for index, req in enumerate(target_torsion):
-                    found = False
-                    for dia in dia_list:
-                        if found:
-                            break
-                        for spacing in spacing_list:
-                            if (
-                                np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
-                                * (np.pi * (dia / 2) ** 2)
-                                > req
-                            ):
-                                target_torsion[index] = f"T{dia}@{spacing} EF"
-                                found = True
-                                break
+        if None not in combined_residual:
+            target_torsion = [
+                a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)  # type: ignore
+            ]
+            if self.depth > 600:
+                if (
+                    self.neg_flex_combo == "False"
+                    and self.pos_flex_combo == "False"
+                    and self.shear_combo == "False"
+                    and self.torsion_combo == "False"
+                ):
+                    if None not in combined_residual:
+                        for index, req in enumerate(target_torsion):
+                            found = False
+                            for dia in dia_list:
+                                if found:
+                                    break
+                                for spacing in spacing_list:
+                                    if (
+                                        np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
+                                        * (np.pi * (dia / 2) ** 2)
+                                        > req
+                                    ):
+                                        target_torsion[index] = f"T{dia}@{spacing} EF"
+                                        found = True
+                                        break
+                else:
+                    target_torsion = ["Overstressed. Please reassess"] * len(
+                        target_torsion
+                    )
             else:
-                target_torsion = ["Overstressed. Please reassess"] * len(target_torsion)
+                target_torsion = ["Not needed"] * len(target_torsion)
+            self.side_face_left_string = target_torsion[0]
+            self.side_face_middle_string = target_torsion[1]
+            self.side_face_right_string = target_torsion[2]
         else:
-            target_torsion = ["Not needed"] * len(target_torsion)
-        self.side_face_left_string = target_torsion[0]
-        self.side_face_middle_string = target_torsion[1]
-        self.side_face_right_string = target_torsion[2]
+            self.side_face_left_string = "Rebar needs to be increased or re-assessed"
+            self.side_face_middle_string = "Rebar needs to be increased or re-assessed"
+            self.side_face_right_string = "Rebar needs to be increased or re-assessed"
 
     def get_side_face_area(self):
         """This method calculates the side face reinforcement area for beam instances with a depth greater
@@ -699,40 +721,48 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.middle_residual_rebar,
             self.right_residual_rebar,
         ]
-        target_torsion = [
-            a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)  # type: ignore
-        ]
-        if self.depth > 600:
-            if (
-                self.neg_flex_combo == "False"
-                and self.pos_flex_combo == "False"
-                and self.shear_combo == "False"
-                and self.torsion_combo == "False"
-            ):
-                for index, req in enumerate(target_torsion):
-                    found = False
-                    for dia in dia_list:
-                        if found:
-                            break
-                        for spacing in spacing_list:
-                            if (
-                                np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
-                                * (np.pi * (dia / 2) ** 2)
-                                > req
-                            ):
-                                target_torsion[index] = np.floor(
-                                    (2 * (self.side_face_clear_space / spacing))  # type: ignore
-                                    * (np.pi * (dia / 2) ** 2)
-                                )
-                                found = True
-                                break
+        if None not in combined_residual:
+            target_torsion = [
+                a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)  # type: ignore
+            ]
+            if self.depth > 600:
+                if (
+                    self.neg_flex_combo == "False"
+                    and self.pos_flex_combo == "False"
+                    and self.shear_combo == "False"
+                    and self.torsion_combo == "False"
+                ):
+                    if None not in combined_residual:
+                        for index, req in enumerate(target_torsion):
+                            found = False
+                            for dia in dia_list:
+                                if found:
+                                    break
+                                for spacing in spacing_list:
+                                    if (
+                                        np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
+                                        * (np.pi * (dia / 2) ** 2)
+                                        > req
+                                    ):
+                                        target_torsion[index] = np.floor(
+                                            (2 * (self.side_face_clear_space / spacing))  # type: ignore
+                                            * (np.pi * (dia / 2) ** 2)
+                                        )
+                                        found = True
+                                        break
+                else:
+                    target_torsion = ["Overstressed. Please reassess"] * len(
+                        target_torsion
+                    )
             else:
-                target_torsion = ["Overstressed. Please reassess"] * len(target_torsion)
+                target_torsion = ["Not needed"] * len(target_torsion)
+            self.side_face_left_area = target_torsion[0]
+            self.side_face_middle_area = target_torsion[1]
+            self.side_face_right_area = target_torsion[2]
         else:
-            target_torsion = ["Not needed"] * len(target_torsion)
-        self.side_face_left_area = target_torsion[0]
-        self.side_face_middle_area = target_torsion[1]
-        self.side_face_right_area = target_torsion[2]
+            self.side_face_left_string = "Rebar needs to be increased or re-assessed"
+            self.side_face_middle_string = "Rebar needs to be increased or re-assessed"
+            self.side_face_right_string = "Rebar needs to be increased or re-assessed"
 
     def get_index_for_side_face_reinf(self):
         """This method gets the index of the side face reinforcement with the highest area.
@@ -749,15 +779,21 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.side_face_middle_string,
             self.side_face_right_string,
         ]
-        max_side_reinf_index, max_area = max(
-            enumerate(side_reinf_area_list), key=lambda x: x[1]  # type: ignore
-        )
-        self.selected_side_face_reinforcement_area = side_reinf_area_list[
-            max_side_reinf_index
-        ]
-        self.selected_side_face_reinforcement_string = side_reinf_string_list[
-            max_side_reinf_index
-        ]
+        if "Rebar needs to be increased or re-assessed" not in side_reinf_string_list:
+            max_side_reinf_index, max_area = max(
+                enumerate(side_reinf_area_list), key=lambda x: x[1]  # type: ignore
+            )
+            self.selected_side_face_reinforcement_area = side_reinf_area_list[
+                max_side_reinf_index
+            ]
+            self.selected_side_face_reinforcement_string = side_reinf_string_list[
+                max_side_reinf_index
+            ]
+        else:
+            self.selected_side_face_reinforcement_area = 0
+            self.selected_side_face_reinforcement_string = (
+                "Rebar needs to be increased or re-assessed"
+            )
 
     def get_index_for_shear_reinf(self):
         """This method gets the index of the shear reinforcement with the highest area.

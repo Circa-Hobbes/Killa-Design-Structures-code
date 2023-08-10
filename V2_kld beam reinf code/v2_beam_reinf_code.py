@@ -338,13 +338,26 @@ for idx, beam in enumerate(beam_instances):  # type: ignore
 
 # Create the relevant functions to export the excel file
 def export_file(beam_schedule_df):
-    root = tk.Tk()
-    root.withdraw()
+    # Ask the user for the file path to save the Excel file
     filepath = asksaveasfilename(defaultextension=".xlsx")
-    root.destroy()
-    if filepath:
-        beam_schedule_df.to_excel(filepath, index=True)
-        sys.exit()
+
+    # Create an Excel writer object
+    writer = pd.ExcelWriter(filepath, engine="xlsxwriter")
+
+    # Write the entire DataFrame to the first sheet
+    beam_schedule_df.to_excel(writer, sheet_name="Beam Reinforcement Schedule")
+
+    # Group by the 'Storey' column
+    grouped = beam_schedule_df.groupby("Storey")
+
+    # Iterate through the groups and write to separate sheets
+    for name, group in grouped:
+        sheet_name = f"Storey {name}"
+        group.to_excel(writer, sheet_name=sheet_name)
+
+    # Save the Excel file
+    writer.close()
+    sys.exit()
 
 
 def resource_path(relative_path):
@@ -354,7 +367,6 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS  # type: ignore
     except Exception:
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
 
