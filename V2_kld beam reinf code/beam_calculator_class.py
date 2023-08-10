@@ -240,7 +240,6 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         for each section of the beam is indexed to its relevant attribute."""
         dia_list = [16, 20, 25, 32]
         target = self.req_top_flex_reinf.copy()
-
         if self.neg_flex_combo == "False":
             for index, req in enumerate(target):
                 found = False
@@ -261,35 +260,36 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                             self.flex_top_right_dia = dia_1
                             self.flex_top_right_dia_two = 0
                         break
-                    for dia_2 in dia_list:
-                        if (
-                            np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
-                            + np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
-                        ) > req:
-                            target[
-                                index
-                            ] = f"{self.flex_rebar_count}T{dia_1} + {self.flex_rebar_count}T{dia_2}"
-                            found = True
-                            # Assign the computed diameters to the appropriate attributes immediately after determining them
-                            if index == 0:
-                                self.flex_top_left_dia = dia_1
-                                self.flex_top_left_dia_two = dia_2
-                            elif index == 1:
-                                self.flex_top_middle_dia = dia_1
-                                self.flex_top_middle_dia_two = dia_2
-                            elif index == 2:
-                                self.flex_top_right_dia = dia_1
-                                self.flex_top_right_dia_two = dia_2
+                if not found:
+                    for dia_1 in dia_list:
+                        for dia_2 in dia_list:
+                            if (
+                                np.floor(np.pi * (dia_1 / 2) ** 2)
+                                * self.flex_rebar_count
+                                + np.floor(np.pi * (dia_2 / 2) ** 2)
+                                * self.flex_rebar_count
+                            ) > req:
+                                target[
+                                    index
+                                ] = f"{self.flex_rebar_count}T{dia_1} + {self.flex_rebar_count}T{dia_2}"
+                                found = True
+                                # Assign the computed diameters to the appropriate attributes immediately after determining them
+                                if index == 0:
+                                    self.flex_top_left_dia = dia_1
+                                    self.flex_top_left_dia_two = dia_2
+                                elif index == 1:
+                                    self.flex_top_middle_dia = dia_1
+                                    self.flex_top_middle_dia_two = dia_2
+                                elif index == 2:
+                                    self.flex_top_right_dia = dia_1
+                                    self.flex_top_right_dia_two = dia_2
+                                break
+                        if found:
                             break
-                    if found:
-                        break
-
-            for index, item in enumerate(target):
-                if item == "":
+                if not found:
                     target[index] = "Increase rebar count or re-assess"
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
-
         self.flex_top_left_rebar_string = target[0]
         self.flex_top_middle_rebar_string = target[1]
         self.flex_top_right_rebar_string = target[2]
@@ -303,29 +303,37 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         target = self.req_top_flex_reinf.copy()
         if self.neg_flex_combo == "False":
             for index, req in enumerate(target):
+                found = False
                 for dia_1 in dia_list:
                     if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
                         target[index] = (
                             np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
                         )
+                        found = True
                         break
-                    for dia_2 in dia_list:
-                        if (
-                            (np.floor(np.pi * (dia_1 / 2) ** 2)) * self.flex_rebar_count
-                        ) + (
-                            np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
-                        ) > req:
-                            target[index] = (
+                if not found:
+                    for dia_1 in dia_list:
+                        for dia_2 in dia_list:
+                            if (
                                 (np.floor(np.pi * (dia_1 / 2) ** 2))
                                 * self.flex_rebar_count
                             ) + (
                                 np.floor(np.pi * (dia_2 / 2) ** 2)
                                 * self.flex_rebar_count
-                            )
+                            ) > req:
+                                target[index] = (
+                                    (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                    * self.flex_rebar_count
+                                ) + (
+                                    np.floor(np.pi * (dia_2 / 2) ** 2)
+                                    * self.flex_rebar_count
+                                )
+                                found = True
+                                break
+                        if found:
                             break
-                for index, item in enumerate(target):
-                    if item == "":
-                        target[index] = "Increase rebar count or re-assess"
+                if not found:
+                    target[index] = "Increase rebar count or re-assess"
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
         self.flex_top_left_rebar_area = target[0]
@@ -358,30 +366,34 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                             self.flex_bot_right_dia = dia_1
                             self.flex_bot_right_dia_two = 0
                         break
-                    for dia_2 in dia_list:
-                        if (
-                            np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
-                            + np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
-                            > req
-                        ):
-                            target[
-                                index
-                            ] = f"{self.flex_rebar_count}T{dia_1} + {self.flex_rebar_count}T{dia_2}"
-                            found = True
-                            if index == 0:
-                                self.flex_bot_left_dia = dia_1
-                                self.flex_bot_left_dia_two = dia_2
-                            elif index == 1:
-                                self.flex_bot_middle_dia = dia_1
-                                self.flex_bot_midle_dia_two = dia_2
-                            elif index == 2:
-                                self.flex_bot_right_dia = dia_1
-                                self.flex_bot_right_dia_two = dia_2
+                if not found:
+                    for dia_1 in dia_list:
+                        for dia_2 in dia_list:
+                            if (
+                                np.floor(np.pi * (dia_1 / 2) ** 2)
+                                * self.flex_rebar_count
+                                + np.floor(np.pi * (dia_2 / 2) ** 2)
+                                * self.flex_rebar_count
+                                > req
+                            ):
+                                target[
+                                    index
+                                ] = f"{self.flex_rebar_count}T{dia_1} + {self.flex_rebar_count}T{dia_2}"
+                                found = True
+                                # Assign the computed diameter to appropriate attributes after determining them
+                                if index == 0:
+                                    self.flex_bot_left_dia = dia_1
+                                    self.flex_bot_left_dia_two = dia_2
+                                elif index == 1:
+                                    self.flex_bot_middle_dia = dia_1
+                                    self.flex_bot_middle_dia_two = dia_2
+                                elif index == 2:
+                                    self.flex_bot_right_dia = dia_1
+                                    self.flex_bot_right_dia_two = dia_2
+                                break
+                        if found:
                             break
-                    if found:
-                        break
-            for index, item in enumerate(target):
-                if item == "":
+                if not found:
                     target[index] = "Increase rebar count or re-assess"
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
@@ -398,29 +410,37 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         target = self.req_bot_flex_reinf.copy()
         if self.pos_flex_combo == "False":
             for index, req in enumerate(target):
+                found = False
                 for dia_1 in dia_list:
                     if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
                         target[index] = (
                             np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
                         )
+                        found = True
                         break
-                    for dia_2 in dia_list:
-                        if (
-                            (np.floor(np.pi * (dia_1 / 2) ** 2)) * self.flex_rebar_count
-                        ) + (
-                            np.floor(np.pi * (dia_2 / 2) ** 2) * self.flex_rebar_count
-                        ) > req:
-                            target[index] = (
+                if not found:
+                    for dia_1 in dia_list:
+                        for dia_2 in dia_list:
+                            if (
                                 (np.floor(np.pi * (dia_1 / 2) ** 2))
                                 * self.flex_rebar_count
                             ) + (
                                 np.floor(np.pi * (dia_2 / 2) ** 2)
                                 * self.flex_rebar_count
-                            )
+                            ) > req:
+                                target[index] = (
+                                    (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                    * self.flex_rebar_count
+                                ) + (
+                                    np.floor(np.pi * (dia_2 / 2) ** 2)
+                                    * self.flex_rebar_count
+                                )
+                                found = True
+                                break
+                        if found:
                             break
-                for index, item in enumerate(target):
-                    if item == "":
-                        target[index] = "Increase rebar count or re-assess"
+                if not found:
+                    target[index] = "Increase rebar count or re-assess"
         else:
             target = ["Overstressed. Please re-assess"] * len(target)
         self.flex_bot_left_rebar_area = target[0]
