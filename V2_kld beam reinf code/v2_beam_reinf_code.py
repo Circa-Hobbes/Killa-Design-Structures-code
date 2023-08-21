@@ -2,7 +2,6 @@ from beam_calculator_class import Beam
 import pandas as pd
 import os
 from PIL import Image, ImageTk
-import numpy as np
 import tkinter as tk
 import sys
 from tkinter.filedialog import askopenfilename, asksaveasfilename

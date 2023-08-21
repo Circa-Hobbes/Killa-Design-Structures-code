@@ -205,6 +205,18 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         """
         return ["True" if combo == "O/S" else "False" for combo in combo_list]
 
+    @staticmethod
+    def provided_reinforcement(diameter: int) -> float:
+        """This is the main function to provide reinforcement and is utilised for clarity purposes.
+
+        Args:
+            diameter (int): The selected diameter to provide.
+
+        Returns:
+            float: An integer representing the provided reinforcement area in mm^2.
+        """
+        return np.floor(np.pi * (diameter / 2) ** 2)
+
     def get_long_count(self):
         """This method takes a defined instance and calculates the required longitudinal rebar count based on its width.
 
@@ -245,7 +257,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                 found = False
                 for dia_1 in dia_list:
                     if (
-                        np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
+                        (Beam.provided_reinforcement(dia_1)) * self.flex_rebar_count  # type: ignore
                     ) > req:
                         target[index] = f"{self.flex_rebar_count}T{dia_1}"
                         found = True
@@ -264,9 +276,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     for dia_1 in dia_list:
                         for dia_2 in dia_list:
                             if (
-                                np.floor(np.pi * (dia_1 / 2) ** 2)
+                                (Beam.provided_reinforcement(dia_1))  # type: ignore
                                 * self.flex_rebar_count
-                                + np.floor(np.pi * (dia_2 / 2) ** 2)
+                                + (Beam.provided_reinforcement(dia_2))  # type: ignore
                                 * self.flex_rebar_count
                             ) > req:
                                 target[
@@ -305,9 +317,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             for index, req in enumerate(target):
                 found = False
                 for dia_1 in dia_list:
-                    if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
+                    if Beam.provided_reinforcement(dia_1) * self.flex_rebar_count > req:  # type: ignore
                         target[index] = (
-                            np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
+                            Beam.provided_reinforcement(dia_1) * self.flex_rebar_count  # type: ignore
                         )
                         found = True
                         break
@@ -315,17 +327,17 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     for dia_1 in dia_list:
                         for dia_2 in dia_list:
                             if (
-                                (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                Beam.provided_reinforcement(dia_1)  # type: ignore
                                 * self.flex_rebar_count
                             ) + (
-                                np.floor(np.pi * (dia_2 / 2) ** 2)
+                                Beam.provided_reinforcement(dia_2)  # type: ignore
                                 * self.flex_rebar_count
                             ) > req:
                                 target[index] = (
-                                    (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                    Beam.provided_reinforcement(dia_1)  # type: ignore
                                     * self.flex_rebar_count
                                 ) + (
-                                    np.floor(np.pi * (dia_2 / 2) ** 2)
+                                    Beam.provided_reinforcement(dia_2)  # type: ignore
                                     * self.flex_rebar_count
                                 )
                                 found = True
@@ -352,7 +364,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             for index, req in enumerate(target):
                 found = False
                 for dia_1 in dia_list:
-                    if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
+                    if Beam.provided_reinforcement(dia_1) * self.flex_rebar_count > req:  # type: ignore
                         target[index] = f"{self.flex_rebar_count}T{dia_1}"
                         found = True
                         # Assign the computed diameter to appropriate attributes after determining them
@@ -370,9 +382,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     for dia_1 in dia_list:
                         for dia_2 in dia_list:
                             if (
-                                np.floor(np.pi * (dia_1 / 2) ** 2)
+                                Beam.provided_reinforcement(dia_1)  # type: ignore
                                 * self.flex_rebar_count
-                                + np.floor(np.pi * (dia_2 / 2) ** 2)
+                                + Beam.provided_reinforcement(dia_2)  # type: ignore
                                 * self.flex_rebar_count
                                 > req
                             ):
@@ -412,9 +424,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             for index, req in enumerate(target):
                 found = False
                 for dia_1 in dia_list:
-                    if np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count > req:
+                    if Beam.provided_reinforcement(dia_1) * self.flex_rebar_count > req:  # type: ignore
                         target[index] = (
-                            np.floor(np.pi * (dia_1 / 2) ** 2) * self.flex_rebar_count
+                            Beam.provided_reinforcement(dia_1) * self.flex_rebar_count  # type: ignore
                         )
                         found = True
                         break
@@ -422,17 +434,17 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     for dia_1 in dia_list:
                         for dia_2 in dia_list:
                             if (
-                                (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                Beam.provided_reinforcement(dia_1)  # type: ignore
                                 * self.flex_rebar_count
                             ) + (
-                                np.floor(np.pi * (dia_2 / 2) ** 2)
+                                Beam.provided_reinforcement(dia_2)  # type: ignore
                                 * self.flex_rebar_count
                             ) > req:
                                 target[index] = (
-                                    (np.floor(np.pi * (dia_1 / 2) ** 2))
+                                    Beam.provided_reinforcement(dia_1)  # type: ignore
                                     * self.flex_rebar_count
                                 ) + (
-                                    np.floor(np.pi * (dia_2 / 2) ** 2)
+                                    Beam.provided_reinforcement(dia_2)  # type: ignore
                                     * self.flex_rebar_count
                                 )
                                 found = True
@@ -548,11 +560,11 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                         break
                     for spacing in shear_spacing_list:
                         if (1000 / spacing) * (
-                            np.pi * (dia / 2) ** 2
+                            Beam.provided_reinforcement(dia)
                         ) * self.req_shear_legs > req and (  # type: ignore
                             1000 / spacing
                         ) * (
-                            np.pi * (dia / 2) ** 2
+                            Beam.provided_reinforcement(dia)
                         ) * 2 > tor_req:  # type: ignore
                             target[index] = f"{self.req_shear_legs}L-T{dia}@{spacing}"
                             found = True
@@ -588,10 +600,10 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     if found:
                         break
                     for spacing in shear_spacing_list:
-                        if (1000 / spacing) * (np.pi * (dia / 2) ** 2) * self.req_shear_legs > req and (1000 / spacing) * (np.pi * (dia / 2) ** 2) * 2 > tor_req:  # type: ignore
+                        if (1000 / spacing) * Beam.provided_reinforcement(dia) * self.req_shear_legs > req and (1000 / spacing) * Beam.provided_reinforcement(dia) * 2 > tor_req:  # type: ignore
                             target[index] = round(
                                 (1000 / spacing)
-                                * (np.pi * (dia / 2) ** 2)
+                                * Beam.provided_reinforcement(dia)
                                 * self.req_shear_legs
                             )
                             found = True
@@ -690,7 +702,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                                 for spacing in spacing_list:
                                     if (
                                         np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
-                                        * (np.pi * (dia / 2) ** 2)
+                                        * Beam.provided_reinforcement(dia)
                                         > req
                                     ):
                                         target_torsion[index] = f"T{dia}@{spacing} EF"
@@ -741,12 +753,12 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                                 for spacing in spacing_list:
                                     if (
                                         np.floor(2 * (self.side_face_clear_space / spacing))  # type: ignore
-                                        * (np.pi * (dia / 2) ** 2)
+                                        * Beam.provided_reinforcement(dia)
                                         > req
                                     ):
                                         target_torsion[index] = np.floor(
                                             (2 * (self.side_face_clear_space / spacing))  # type: ignore
-                                            * (np.pi * (dia / 2) ** 2)
+                                            * Beam.provided_reinforcement(dia)
                                         )
                                         found = True
                                         break
