@@ -29,15 +29,15 @@ def test_get_long_count():
 def test_side_face_string():
     test_beam = Beam(
         id=None,
-        width=800,
+        width=900,
         depth=900,
-        pos_flex_combo="True",
-        neg_flex_combo="True",
-        req_top_flex_reinf=[300, 300, 300],
-        req_bot_flex_reinf=[300, 300, 300],
+        pos_flex_combo="False",
+        neg_flex_combo="False",
+        req_top_flex_reinf=[1000, 1000, 1000],
+        req_bot_flex_reinf=[1000, 1000, 1000],
         req_flex_torsion_reinf=[0, 0, 0],
-        shear_combo="True",
-        torsion_combo="True",
+        shear_combo="False",
+        torsion_combo="False",
         req_shear_reinf=[0, 0, 0],
         req_torsion_reinf=[0, 0, 0],
     )
@@ -62,8 +62,6 @@ def test_side_face_string():
 
     test_beam.get_side_face_string()
 
-    assert (
-        test_beam.side_face_left_string == "Rebar needs to be increased or re-assessed"
-    )
+    assert test_beam.side_face_left_string == "T12@250 EF"
     # assert test_beam.side_face_middle_string == "T12@250 EF"
     # assert test_beam.side_face_right_string == "T12@250 EF"

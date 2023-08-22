@@ -285,6 +285,8 @@ if __name__ == "__main__":
 
         # Grab the index of the side face reinforcement with the highest area.
         beam.get_index_for_side_face_reinf()
+        if beam.depth > 900:
+            print(beam)
 
 # Create dataframe to fill data with.
 columns = pd.MultiIndex.from_tuples(
