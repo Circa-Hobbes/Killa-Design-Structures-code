@@ -264,13 +264,10 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                         # Assign the computed diameter to the appropriate attributes immediately after determining them
                         if index == 0:
                             self.flex_top_left_dia = dia_1
-                            self.flex_top_left_dia_two = 0
                         elif index == 1:
                             self.flex_top_middle_dia = dia_1
-                            self.flex_top_middle_dia_two = 0
                         elif index == 2:
                             self.flex_top_right_dia = dia_1
-                            self.flex_top_right_dia_two = 0
                         break
                 if not found:
                     for dia_1 in dia_list:
@@ -370,13 +367,10 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                         # Assign the computed diameter to appropriate attributes after determining them
                         if index == 0:
                             self.flex_bot_left_dia = dia_1
-                            self.flex_bot_left_dia_two = 0
                         elif index == 1:
                             self.flex_bot_middle_dia = dia_1
-                            self.flex_bot_middle_dia_two = 0
                         elif index == 2:
                             self.flex_bot_right_dia = dia_1
-                            self.flex_bot_right_dia_two = 0
                         break
                 if not found:
                     for dia_1 in dia_list:
@@ -700,7 +694,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             ):
                 if self.depth >= 900 and True not in torsion_check:
                     target_torsion = ["T12@250 EF"] * len(target_torsion)
-                elif self.depth > 600 and True in torsion_check:
+                elif self.depth > 600:
                     for index, req in enumerate(target_torsion):
                         found = False
                         for dia in dia_list:
@@ -760,7 +754,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                             * Beam.provided_reinforcement(12)
                         )
                     ] * len(target_torsion)
-                elif self.depth > 600 and True in torsion_check:
+                elif self.depth > 600:
                     for index, req in enumerate(target_torsion):
                         found = False
                         for dia in dia_list:

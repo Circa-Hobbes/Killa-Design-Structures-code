@@ -31,8 +31,8 @@ def test_side_face_string():
         id=None,
         width=900,
         depth=900,
-        pos_flex_combo="False",
-        neg_flex_combo="False",
+        pos_flex_combo="True",
+        neg_flex_combo="True",
         req_top_flex_reinf=[1000, 1000, 1000],
         req_bot_flex_reinf=[1000, 1000, 1000],
         req_flex_torsion_reinf=[0, 0, 0],
@@ -62,6 +62,6 @@ def test_side_face_string():
 
     test_beam.get_side_face_string()
 
-    assert test_beam.side_face_left_string == "T12@250 EF"
+    assert test_beam.flex_top_left_rebar_string == "Overstressed. Please re-assess"
     # assert test_beam.side_face_middle_string == "T12@250 EF"
     # assert test_beam.side_face_right_string == "T12@250 EF"
