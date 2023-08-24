@@ -27,6 +27,7 @@ class Beam:
         self.id = id
         self.width = width
         self.depth = depth
+        self.eff_depth = 0
         self.pos_flex_combo = pos_flex_combo
         self.neg_flex_combo = neg_flex_combo
         self.req_top_flex_reinf = req_top_flex_reinf
@@ -71,6 +72,7 @@ class Beam:
         self.shear_left_dia = 0
         self.shear_middle_dia = 0
         self.shear_right_dia = 0
+        self.min_shear_long_spacing = 0
         self.shear_left_string = None
         self.shear_left_area = None
         self.shear_middle_string = None
@@ -132,6 +134,7 @@ Middle Residual Rebar: {self.middle_residual_rebar} mm^2
 Right Residual Rebar: {self.right_residual_rebar} mm^2
 
 Required Shear Legs: {self.req_shear_legs}
+Minimum Shear Longitudinal Spacing: {self.min_shear_long_spacing} mm
 
 Required Total Left Shear Reinforcement: {self.req_total_left_shear_reinf}
 Required Total Middle Shear Reinforcement: {self.req_total_middle_shear_reinf}
@@ -216,6 +219,12 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             float: An integer representing the provided reinforcement area in mm^2.
         """
         return np.floor(np.pi * (diameter / 2) ** 2)
+
+    def get_eff_depth(self):
+        """This method takes the acquired depth of the instanced beam and returns 0.8 of that depth to acquire a conservative
+        effective depth value.
+        """
+        self.eff_depth = 0.8 * self.depth
 
     def get_long_count(self):
         """This method takes a defined instance and calculates the required longitudinal rebar count based on its width.
@@ -851,3 +860,94 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.selected_shear_right_string = shear_reinf_string_list[
                 max_shear_reinf_index
             ]
+
+    def get_min_shear_long_spacing(self):
+        """This method follows Clause 18.4.2.4 of ACI 318-19 by ensuring that the longitudinally spacing of shear links is
+        not exceeded. This value is inputted into the space list found in shear string and area methods.
+        """
+        combined_long_dia_list = [
+            self.flex_top_left_dia,
+            self.flex_top_left_dia_two,
+            self.flex_top_middle_dia,
+            self.flex_top_middle_dia_two,
+            self.flex_top_right_dia,
+            self.flex_top_right_dia_two,
+            self.flex_bot_left_dia,
+            self.flex_bot_left_dia_two,
+            self.flex_bot_middle_dia,
+            self.flex_bot_middle_dia_two,
+            self.flex_bot_right_dia,
+            self.flex_bot_right_dia_two,
+        ]
+        combined_shear_dia_list = [
+            self.shear_left_dia,
+            self.shear_middle_dia,
+            self.shear_right_dia,
+        ]
+
+        if (
+            self.pos_flex_combo == "False"
+            and self.neg_flex_combo == "False"
+            and "Increase rebar count or re-assess" not in combined_long_dia_list
+        ):
+            filtered_long_dia_list = [i for i in combined_long_dia_list if i != 0]
+        else:
+            filtered_long_dia_list = []
+
+        if self.shear_combo == "False" and self.torsion_combo == "False":
+            filtered_shear_dia_list = [i for i in combined_shear_dia_list if i != 0]
+        else:
+            filtered_shear_dia_list = []
+
+        if (
+            filtered_long_dia_list
+            and filtered_shear_dia_list
+            and "Overstressed. Please re-assess" not in combined_long_dia_list
+        ):
+            smallest_long_dia = min(filtered_long_dia_list)
+            smallest_shear_dia = min(filtered_shear_dia_list)
+            self.min_shear_long_spacing = round(
+                min(
+                    [
+                        (self.eff_depth / 4),
+                        (smallest_long_dia * 8),
+                        (smallest_shear_dia * 24),
+                        300,
+                    ]
+                )
+            )
+
+    def modify_shear_reinf(self):
+        check_shear = [
+            self.shear_left_string,
+            self.shear_middle_string,
+            self.shear_right_string,
+        ]
+        shear_left_spacing = int(self.shear_left_string[-3:])  # type: ignore
+        shear_right_spacing = int(self.shear_right_string[-3:])  # type: ignore
+        str_min_shear_long_spacing = str(self.min_shear_long_spacing)
+
+        if (
+            "Overstressed. Please re-assess" not in check_shear
+            and self.min_shear_long_spacing != 0
+        ):
+            if (
+                shear_left_spacing > self.min_shear_long_spacing
+                or shear_right_spacing > self.min_shear_long_spacing
+            ):
+                self.shear_left_string = (
+                    self.shear_left_string[:-3] + str_min_shear_long_spacing  # type: ignore
+                )
+                self.shear_right_string = (
+                    self.shear_right_string[:-3] + str_min_shear_long_spacing  # type: ignore
+                )
+                self.shear_left_area = (
+                    (1000 / self.min_shear_long_spacing)
+                    * (Beam.provided_reinforcement(self.shear_left_dia))
+                    * self.req_shear_legs
+                )
+                self.shear_right_area = (
+                    (1000 / self.min_shear_long_spacing)
+                    * (Beam.provided_reinforcement(self.shear_right_dia))
+                    * self.req_shear_legs
+                )

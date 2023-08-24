@@ -247,7 +247,9 @@ if __name__ == "__main__":
 
     # Begin with for loop and create attributes for each beam instance to undertake calculations.
     for beam in beam_instances:
-        # First get the longitudinal rebar count.
+        # Get the effective depth by multiplying the depth by 0.8.
+        beam.get_eff_depth()
+        # Get the longitudinal rebar count.
         beam.get_long_count()
 
         # Split the torsion reinforcement to the top and bottom rebar if the depth <= 600mm.
@@ -272,6 +274,10 @@ if __name__ == "__main__":
         # Calculate the provided shear reinforcement string and area.
         beam.get_shear_string()
         beam.get_shear_area()
+
+        # Check and replace if necessary the maximum longitudinal shear spacing against Clause 18.4.2.4 of ACI 318-19.
+        beam.get_min_shear_long_spacing()
+        beam.modify_shear_reinf()
 
         # Grab the index of the shear reinforcement with the highest area.
         beam.get_index_for_shear_reinf()
