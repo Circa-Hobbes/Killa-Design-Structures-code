@@ -906,26 +906,39 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         ):
             smallest_long_dia = min(filtered_long_dia_list)
             smallest_shear_dia = min(filtered_shear_dia_list)
-            self.min_shear_long_spacing = round(
-                min(
-                    [
-                        (self.eff_depth / 4),
-                        (smallest_long_dia * 8),
-                        (smallest_shear_dia * 24),
-                        300,
-                    ]
-                )
+            min_shear_long_spacing = min(
+                [
+                    (self.eff_depth / 4),
+                    (smallest_long_dia * 8),
+                    (smallest_shear_dia * 24),
+                    300,
+                ]
             )
+            if min_shear_long_spacing > 125 and min_shear_long_spacing < 150:
+                min_long_spacing = 125
+            else:
+                min_long_spacing = 100
+            self.min_shear_long_spacing = min_long_spacing
 
     def modify_shear_reinf(self):
+        """This method assesses whether the longitudinal shear spacing provided is greater than the codal maximum.
+        If it is, than the spacing provided is replaced by the codal maximum both in string and area.
+        """
+        shear_dia_list = [12, 16, 20, 25]
+        target = [
+            self.req_total_left_shear_reinf,
+            self.req_total_middle_shear_reinf,
+            self.req_total_right_shear_reinf,
+        ]
         check_shear = [
             self.shear_left_string,
             self.shear_middle_string,
             self.shear_right_string,
         ]
+        paired_values = []
+
         shear_left_spacing = int(self.shear_left_string[-3:])  # type: ignore
         shear_right_spacing = int(self.shear_right_string[-3:])  # type: ignore
-        str_min_shear_long_spacing = str(self.min_shear_long_spacing)
 
         if (
             "Overstressed. Please re-assess" not in check_shear
@@ -935,19 +948,31 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                 shear_left_spacing > self.min_shear_long_spacing
                 or shear_right_spacing > self.min_shear_long_spacing
             ):
-                self.shear_left_string = (
-                    self.shear_left_string[:-3] + str_min_shear_long_spacing  # type: ignore
-                )
-                self.shear_right_string = (
-                    self.shear_right_string[:-3] + str_min_shear_long_spacing  # type: ignore
-                )
-                self.shear_left_area = (
-                    (1000 / self.min_shear_long_spacing)
-                    * (Beam.provided_reinforcement(self.shear_left_dia))
-                    * self.req_shear_legs
-                )
-                self.shear_right_area = (
-                    (1000 / self.min_shear_long_spacing)
-                    * (Beam.provided_reinforcement(self.shear_right_dia))
-                    * self.req_shear_legs
-                )
+                for index, (req, tor_req) in enumerate(
+                    zip(target, self.req_torsion_reinf)
+                ):
+                    found = False
+                    for dia in shear_dia_list:
+                        if found:
+                            break
+                        if ((1000 / self.min_shear_long_spacing) * Beam.provided_reinforcement(dia) * self.req_shear_legs) > req and ((1000 / self.min_shear_long_spacing) * Beam.provided_reinforcement(dia) * 2) > tor_req:  # type: ignore
+                            paired_values.append(
+                                [
+                                    (1000 / self.min_shear_long_spacing)
+                                    * Beam.provided_reinforcement(dia)
+                                    * self.req_shear_legs,
+                                    f"{self.req_shear_legs}L-T{dia}@{self.min_shear_long_spacing}",
+                                ]
+                            )
+                            if index == 0:
+                                self.shear_left_dia = dia
+                            elif index == 1:
+                                self.shear_middle_dia = dia
+                            elif index == 2:
+                                self.shear_right_dia = dia
+                            found = True
+                self.shear_left_area = paired_values[0][0]
+                self.shear_right_area = paired_values[2][0]
+
+                self.shear_left_string = paired_values[0][1]
+                self.shear_right_string = paired_values[2][1]
