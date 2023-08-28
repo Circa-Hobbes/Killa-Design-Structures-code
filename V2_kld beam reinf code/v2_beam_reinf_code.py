@@ -280,7 +280,7 @@ if __name__ == "__main__":
         beam.modify_shear_reinf()
 
         # Grab the index of the shear reinforcement with the highest area.
-        beam.get_index_for_shear_reinf()
+        # beam.get_index_for_shear_reinf()
 
         # Calculate the allowable side face clear space in beams which have a depth greater than 600mm.
         beam.get_side_face_clear_space()
@@ -330,9 +330,9 @@ beam_mapping = {
     "flex_top_middle_rebar_string": ("Top Reinforcement", "Middle (T)"),
     "flex_top_right_rebar_string": ("Top Reinforcement", "Right (TR)"),
     "selected_side_face_reinforcement_string": ("Side Face Reinforcement", ""),
-    "selected_shear_left_string": ("Shear links", "Left (H)"),
-    "selected_shear_middle_string": ("Shear links", "Middle (J)"),
-    "selected_shear_right_string": ("Shear links", "Right (K)"),
+    "shear_left_string": ("Shear links", "Left (H)"),
+    "shear_middle_string": ("Shear links", "Middle (J)"),
+    "shear_right_string": ("Shear links", "Right (K)"),
 }
 
 # Loop through all the beam instances and populate the beam schedule dataframe with relevant information.
