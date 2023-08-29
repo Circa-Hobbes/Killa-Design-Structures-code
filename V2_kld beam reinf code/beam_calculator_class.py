@@ -937,13 +937,12 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         ]
         paired_values = []
 
-        shear_left_spacing = int(self.shear_left_string[-3:])  # type: ignore
-        shear_right_spacing = int(self.shear_right_string[-3:])  # type: ignore
-
         if (
             "Overstressed. Please re-assess" not in check_shear
             and self.min_shear_long_spacing != 0
         ):
+            shear_left_spacing = int(self.shear_left_string[-3:])  # type: ignore
+            shear_right_spacing = int(self.shear_right_string[-3:])  # type: ignore
             if (
                 shear_left_spacing > self.min_shear_long_spacing
                 or shear_right_spacing > self.min_shear_long_spacing
