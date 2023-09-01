@@ -170,7 +170,7 @@ if __name__ == "__main__":
     shear_combo_check = Beam.check_combo(nested_shear_combo)
 
     # Repeat the same as shear combo, except for torsion combo.
-    torsion_combo_list = initial_shear_df["Unnamed: 12"].tolist()
+    torsion_combo_list = initial_shear_df["Unnamed: 9"].tolist()
     nested_torsion_combo = [
         torsion_combo_list[i : i + 3] for i in range(0, len(torsion_combo_list), 3)
     ]

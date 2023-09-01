@@ -244,6 +244,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         If it's <=600mm, it takes the torsion flexural requirement list, splits each index into two,
         and then distributes it amongst the top and bottom longitudinal reinforcement. It modifies
         the attributes in place and changes the flex_torsion reinforcement to a list of 0's.
+        Check if we need to check against the flexural torsion combo
         """
         if self.depth <= 600:
             divided_torsion_list = [i / 2 for i in self.req_flex_torsion_reinf]
