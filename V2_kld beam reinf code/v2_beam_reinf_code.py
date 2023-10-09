@@ -314,9 +314,11 @@ columns = pd.MultiIndex.from_tuples(
 beam_schedule_df = pd.DataFrame(columns=columns)
 
 # Apply the storey data to the storey column in the beam schedule dataframe.
-beam_schedule_df.loc[:, "Storey"] = initial_flexural_df[
-    "TABLE:  Concrete Beam Flexure Envelope - ACI 318-19"
-].iloc[::3]
+beam_schedule_df.loc[:, "Storey"] = (
+    initial_flexural_df["TABLE:  Concrete Beam Flexure Envelope - ACI 318-19"]
+    .iloc[::3]
+    .values
+)
 
 # Map the relevant beam attributes to the beam schedule dataframe columns:
 beam_mapping = {
