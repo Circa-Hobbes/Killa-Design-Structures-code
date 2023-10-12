@@ -346,7 +346,7 @@ for idx, beam in enumerate(beam_instances):  # type: ignore
 # Create the relevant functions to export the excel file
 def export_file(beam_schedule_df):
     # Ask the user for the file path to save the Excel file
-    filepath = asksaveasfilename(defaultextension=".xlsx")
+    filepath = asksaveasfilename(defaultextension=".xlsx")  # type: ignore
 
     # Create an Excel writer object
     writer = pd.ExcelWriter(filepath, engine="xlsxwriter")
