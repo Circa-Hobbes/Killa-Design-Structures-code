@@ -402,7 +402,6 @@ label = tk.Label(gui, image=photo)
 label.pack(side="top", fill="both", padx=50)
 
 # Put the button to ask for the name of the completed excel file and to download it
-
 final_button = tk.Button(
     gui,
     text="Please Download the Completed Beam Reinforcement Schedule",
