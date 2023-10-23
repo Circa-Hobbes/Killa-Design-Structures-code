@@ -10,10 +10,11 @@ from PIL import Image, ImageTk
 from Extraction import Extraction as ex
 
 if __name__ == "__main__":
-    SapModel = ex.initialise_sap_model()[0]
-    if SapModel == None:
-        assess_instance = (
-            "No running instance of the program found or failed to attach."
-        )
-    else:
-        ex.is_locked(SapModel)
+    SapModel = ex.initialise_sap_model()
+    if SapModel != None:
+        if ex.is_locked(SapModel) == False:
+            print(
+                "ETABS instance identified, but model is not locked. Please run model and try again!"
+            )  # This will need to be updated later on in the code for the GUI.
+        else:
+            ex.clear_combos(SapModel)
