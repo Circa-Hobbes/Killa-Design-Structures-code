@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import comtypes.client
+import clr
 import matplotlib.pyplot as plt
 
 
@@ -41,6 +42,11 @@ class Extraction:
         except (OSError, comtypes.COMError, AttributeError):
             print("No running instance of the program found or failed to attach.")
 
+        return SapModel
+
+    @staticmethod
+    def exit_sap_model(SapModel: object):  # type: ignore
+        SapModel = None
         return SapModel
 
     @staticmethod
@@ -142,6 +148,8 @@ class Extraction:
 
     def calculate_overall_wind_displacement(self, SapModel: object):
         for combo in self.filtered_combo_list:  # type: ignore
+            # Reset all the load cases and combinations.
+            Extraction.clear_combos(SapModel)
             # Combo[0] is load combination, combo[1] is load case.
             if combo[0] == 0:
                 SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(  # type: ignore
@@ -280,6 +288,172 @@ class Extraction:
                     "Y Direction Displacement (mm)"
                 ].abs()
 
+                # Append the overall max wind displacement and overall min wind displacement to the table attribute.
+                self.tables["overall_wind_displacement_max"].append(
+                    overall_max_windDisplacement_df
+                )
+                self.tables["overall_wind_displacement_min"].append(
+                    overall_min_windDisplacement_df
+                )
+            else:
+                # Reset all the load cases and combinations.
+                Extraction.clear_combos(SapModel)
+
+                # Grab Load case rather than load combination.
+                SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(  # type: ignore
+                    [combo[1]]
+                )
+                SapModel.DatabaseTables.SetOutputOptionsForDisplay(  # type: ignore
+                    IsUserBaseReactionLocation=False,
+                    UserBaseReactionX=False,
+                    UserBaseReactionY=False,
+                    UserBaseReactionZ=False,
+                    IsAllModes=False,
+                    StartMode=1,
+                    EndMode=12,
+                    IsAllBucklingModes=False,
+                    StartBucklingMode=1,
+                    EndBucklingMode=6,
+                    MultistepStatic=1,
+                    NonlinearStatic=1,
+                    ModalHistory=1,
+                    DirectHistory=1,
+                    Combo=1,
+                )
+                # Grab the diaphragm center of mass displacements table.
+                mass_displacement_table = SapModel.DatabaseTables.GetTableForDisplayArray("Diaphragm Center Of Mass Displacements", GroupName="")  # type: ignore
+
+                # Extract the column headings and number of rows from the table. This needs to be done as the data is currently an array.
+                cols = mass_displacement_table[2]
+                num_rows = mass_displacement_table[3]
+
+                # Input data into array split.
+                table_data = np.array_split(mass_displacement_table[4], num_rows)
+
+                # Create wind displacement dataframe.
+                windDisplacement_df = pd.DataFrame(table_data)
+                windDisplacement_df.columns = cols
+
+                # Loop through the wind displacement dataframe and drop all rows containing non D1 diaphragms.
+                windDisplacement_df = windDisplacement_df[
+                    windDisplacement_df["Diaphragm"] == "D1"
+                ]
+
+                # Loop through the wind displacement dataframe and drop all rows containing min. This will be the max dataframe.
+                max_windDisplacement_df = windDisplacement_df[
+                    windDisplacement_df["StepType"] == "Max"
+                ]
+
+                # Loop through the wind displacement dataframe and drop all rows containing Max. This will be the min dataframe.
+                min_windDisplacement_df = windDisplacement_df[
+                    windDisplacement_df["StepType"] == "Min"
+                ]
+
+                # Reset indices to ensure that the rows are indexed correctly.
+                max_windDisplacement_df.reset_index(drop=True, inplace=True)
+                min_windDisplacement_df.reset_index(drop=True, inplace=True)
+
+                # Create new dataframes for min and max overall wind displacement to populate relevant data
+                overall_min_windDisplacement_df = pd.DataFrame(
+                    columns=[
+                        "Story",
+                        "Elevation (m)",
+                        "Story Height (m)",
+                        "Allowable Limit",
+                        "X Direction Displacement (mm)",
+                        "Y Direction Displacement (mm)",
+                    ]
+                )
+                overall_max_windDisplacement_df = pd.DataFrame(
+                    columns=[
+                        "Story",
+                        "Elevation (m)",
+                        "Story Height (m)",
+                        "Allowable Limit",
+                        "X Direction Displacement (mm)",
+                        "Y Direction Displacement (mm)",
+                    ]
+                )
+
+                # Populate columns of new dataframes with appropriate data.
+                overall_min_windDisplacement_df["Story"] = self.extracts[
+                    "story_heights"
+                ]["Story"]
+                overall_max_windDisplacement_df["Story"] = self.extracts[
+                    "story_heights"
+                ]["Story"]
+                overall_min_windDisplacement_df["Elevation (m)"] = self.extracts[
+                    "story_heights"
+                ]["Elevation (m)"]
+                overall_max_windDisplacement_df["Elevation (m)"] = self.extracts[
+                    "story_heights"
+                ]["Elevation (m)"]
+                overall_min_windDisplacement_df["Story Height (m)"] = self.extracts[
+                    "story_heights"
+                ]["Story Height (m)"]
+                overall_max_windDisplacement_df["Story Height (m)"] = self.extracts[
+                    "story_heights"
+                ]["Story Height (m)"]
+                overall_min_windDisplacement_df["Allowable Limit"] = round(
+                    self.extracts["story_heights"]["Elevation (m)"] * 1000 / 500
+                )
+                overall_max_windDisplacement_df["Allowable Limit"] = round(
+                    self.extracts["story_heights"]["Elevation (m)"] * 1000 / 500
+                )
+                overall_min_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ] = min_windDisplacement_df["UX"]
+                overall_max_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ] = max_windDisplacement_df["UX"]
+                overall_min_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ] = min_windDisplacement_df["UY"]
+                overall_max_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ] = max_windDisplacement_df["UY"]
+
+                # Convert column datatypes to float to enable plotting.
+                overall_max_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ] = overall_max_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ].astype(
+                    float
+                )
+                overall_max_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ] = overall_max_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ].astype(
+                    float
+                )
+                overall_min_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ] = overall_min_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ].astype(
+                    float
+                )
+                overall_min_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ] = overall_min_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ].astype(
+                    float
+                )
+
+                # Take minimum values and make absolute to enable plotting.
+                overall_min_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ] = overall_min_windDisplacement_df[
+                    "X Direction Displacement (mm)"
+                ].abs()
+                overall_min_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ] = overall_min_windDisplacement_df[
+                    "Y Direction Displacement (mm)"
+                ].abs()
                 # Append the overall max wind displacement and overall min wind displacement to the table attribute.
                 self.tables["overall_wind_displacement_max"].append(
                     overall_max_windDisplacement_df

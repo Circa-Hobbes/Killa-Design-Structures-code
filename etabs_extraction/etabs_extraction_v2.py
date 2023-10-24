@@ -18,3 +18,9 @@ if __name__ == "__main__":
             )  # This will need to be updated later on in the code for the GUI.
         else:
             ex.clear_combos(SapModel)
+            overall_wind_dis = ex([[0, "WINDDRIFT-CODE"], [1, "W"], None])
+            overall_wind_dis.get_story_heights(SapModel)
+            overall_wind_dis.calculate_overall_wind_displacement(SapModel)
+            print(overall_wind_dis.tables["overall_wind_displacement_max"])
+            print(overall_wind_dis.filtered_combo_list)
+            ex.exit_sap_model(SapModel)
