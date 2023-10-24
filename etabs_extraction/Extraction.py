@@ -3,6 +3,7 @@ import pandas as pd
 import comtypes.client
 import clr
 import matplotlib.pyplot as plt
+import sys
 
 
 class Extraction:
@@ -32,14 +33,19 @@ class Extraction:
         # Create API helper object.
         helper = comtypes.client.CreateObject("ETABSv1.Helper")
         helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)  # type: ignore
-        SapModel = None
 
         try:
             # Get the current ETABS instance.
             myETABSObject = helper.GetObject("CSI.ETABS.API.ETABSObject")
-            # Create SapModel object (ETABS instance)
+        except (OSError, comtypes.COMError):
+            SapModel = None
+            sys.exit(-1)
+
+        # Create SapModel object (ETABS instance)
+        try:
             SapModel = myETABSObject.SapModel
-        except (OSError, comtypes.COMError, AttributeError):
+        except AttributeError:
+            SapModel = None
             print("No running instance of the program found or failed to attach.")
 
         return SapModel
