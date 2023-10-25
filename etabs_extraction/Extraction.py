@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import comtypes.client
-import clr
 import matplotlib.pyplot as plt
 import sys
 
@@ -156,6 +155,7 @@ class Extraction:
         for combo in self.filtered_combo_list:  # type: ignore
             # Reset all the load cases and combinations.
             Extraction.clear_combos(SapModel)
+
             # Combo[0] is load combination, combo[1] is load case.
             if combo[0] == 0:
                 SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(  # type: ignore
@@ -460,6 +460,7 @@ class Extraction:
                 ] = overall_min_windDisplacement_df[
                     "Y Direction Displacement (mm)"
                 ].abs()
+
                 # Append the overall max wind displacement and overall min wind displacement to the table attribute.
                 self.tables["overall_wind_displacement_max"].append(
                     overall_max_windDisplacement_df
