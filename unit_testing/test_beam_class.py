@@ -1,9 +1,6 @@
 import sys
 
 sys.path.append(
-    r"C:/Users/adnan.a/OneDrive - Killa Design/Documents/GitHub/Killa-Design-Structures-code/unit_testing"
-)
-sys.path.append(
     r"C:\Users\adnan.a\OneDrive - Killa Design\Documents\GitHub\Killa-Design-Structures-code\V2_kld beam reinf code"
 )
 
@@ -15,12 +12,12 @@ def test_side_face_string():
     test_beam = Beam(
         id=None,
         width=900,
-        depth=900,
-        pos_flex_combo="True",
-        neg_flex_combo="True",
+        depth=400,
+        pos_flex_combo="False",
+        neg_flex_combo="False",
         req_top_flex_reinf=[1000, 1000, 1000],
         req_bot_flex_reinf=[1000, 1000, 1000],
-        req_flex_torsion_reinf=[0, 0, 0],
+        req_flex_torsion_reinf=[200, 200, 200],
         shear_combo="False",
         torsion_combo="False",
         req_shear_reinf=[0, 0, 0],
@@ -72,4 +69,8 @@ def test_side_face_string():
     # Grab the index of the side face reinforcement with the highest area.
     test_beam.get_index_for_side_face_reinf()
 
-    assert test_beam.flex_top_left_rebar_string == "Overstressed. Please re-assess"
+    assert test_beam.selected_side_face_reinforcement_string == "Not needed"
+
+    assert test_beam.req_shear_legs == 6
+
+    assert test_beam.selected_shear_left_string == None
