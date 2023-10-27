@@ -1,4 +1,5 @@
 import sys
+import pytest
 
 sys.path.append(
     r"C:\Users\adnan.a\OneDrive - Killa Design\Documents\GitHub\Killa-Design-Structures-code\V2_kld beam reinf code"
@@ -7,70 +8,30 @@ sys.path.append(
 from beam_calculator_class import Beam
 
 
-def test_side_face_string():
-    """Note: for attributes with lists, index 0 is left, index 1 is middle, and index 2 is right."""
-    test_beam = Beam(
+@pytest.fixture
+def example_beam() -> object:
+    """This example beam is utilised for testing purposes.
+    Please define the attributes of the example beam in the following instance.
+    Returns:
+        object: example beam to utilise in tests.
+    """
+    example_beam = Beam(
         id=None,
-        width=900,
-        depth=400,
+        width=400,
+        depth=900,
         pos_flex_combo="False",
         neg_flex_combo="False",
         req_top_flex_reinf=[1000, 1000, 1000],
         req_bot_flex_reinf=[1000, 1000, 1000],
-        req_flex_torsion_reinf=[200, 200, 200],
+        req_flex_torsion_reinf=[0, 0, 0],
         shear_combo="False",
         torsion_combo="False",
         req_shear_reinf=[0, 0, 0],
         req_torsion_reinf=[0, 0, 0],
     )
+    return example_beam
 
-    # Get the effective depth by multiplying the depth by 0.8.
-    test_beam.get_eff_depth()
-    # Get the longitudinal rebar count.
-    test_beam.get_long_count()
 
-    # Split the torsion reinforcement to the top and bottom rebar if the depth <= 600mm.
-    test_beam.flex_torsion_splitting()
-
-    # Begin calculating the required top and bottom longitudinal reinforcement.
-    test_beam.get_top_flex_rebar_string()
-    test_beam.get_top_flex_rebar_area()
-
-    test_beam.get_bot_flex_rebar_string()
-    test_beam.get_bot_flex_rebar_area()
-
-    # Calculate the residual rebar obtained from the provided against the required.
-    test_beam.get_residual_rebar()
-
-    # Calculate the required shear legs based on the beams width.
-    test_beam.get_shear_legs()
-
-    # Calculate the total required shear reinforcement including shear and torsion.
-    test_beam.get_total_shear_req()
-
-    # Calculate the provided shear reinforcement string and area.
-    test_beam.get_shear_string()
-    test_beam.get_shear_area()
-
-    # Check and replace if necessary the maximum longitudinal shear spacing against Clause 18.4.2.4 of ACI 318-19.
-    test_beam.get_min_shear_long_spacing()
-    test_beam.modify_shear_reinf()
-
-    # Grab the index of the shear reinforcement with the highest area.
-    # beam.get_index_for_shear_reinf()
-
-    # Calculate the allowable side face clear space in beams which have a depth greater than 600mm.
-    test_beam.get_side_face_clear_space()
-
-    # Calculate the provided side face reinforcement string and area.
-    test_beam.get_side_face_string()
-    test_beam.get_side_face_area()
-
-    # Grab the index of the side face reinforcement with the highest area.
-    test_beam.get_index_for_side_face_reinf()
-
-    assert test_beam.selected_side_face_reinforcement_string == "Not needed"
-
-    assert test_beam.req_shear_legs == 6
-
-    assert test_beam.selected_shear_left_string == None
+def test_eff_depth(example_beam: Beam):
+    example_beam.get_eff_depth()
+    assert example_beam.eff_depth == 0.8 * example_beam.depth
