@@ -1,15 +1,10 @@
 import sys
 import pytest
-
-sys.path.append(
-    r"C:\Users\adnan.a\OneDrive - Killa Design\Documents\GitHub\Killa-Design-Structures-code\V2_kld beam reinf code"
-)
-
-from beam_calculator_class import Beam
+from beamscheduler.beam_calculator_class import Beam
 
 
 @pytest.fixture
-def example_beam() -> object:
+def example_beam() -> Beam:
     """This example beam is utilised for testing purposes.
     Please define the attributes of the example beam in the following instance.
     Returns:
@@ -17,8 +12,8 @@ def example_beam() -> object:
     """
     example_beam = Beam(
         id=None,
-        width=400,
-        depth=900,
+        width=300,
+        depth=500,
         pos_flex_combo="False",
         neg_flex_combo="False",
         req_top_flex_reinf=[1000, 1000, 1000],
