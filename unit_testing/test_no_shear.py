@@ -7,7 +7,7 @@ def example_beam() -> Beam:
     """This example beam is utilised for testing purposes.
     Please define the attributes of the example beam in the following instance.
 
-    This beam is currently mimicking beam B213 at P2, Revit ID: L2-B33.
+    This beam is currently mimicking beam B213 at P2, Revit ID: L2-B33, but with no shear.
     Returns:
         object: example beam to utilise in tests.
     """
@@ -22,7 +22,7 @@ def example_beam() -> Beam:
         req_flex_torsion_reinf=[0, 0, 0],
         shear_combo="False",
         torsion_combo="False",
-        req_shear_reinf=[1595.98, 1596.18, 800.44],
+        req_shear_reinf=[0, 0, 0],
         req_torsion_reinf=[0, 0, 0],
     )
     return example_beam
@@ -159,9 +159,9 @@ def test_total_shear_req(example_beam: Beam):
         example_beam (Beam): Refer to example beam function
     """
     example_beam.get_total_shear_req()
-    assert example_beam.req_total_left_shear_reinf == 1595.98
-    assert example_beam.req_total_middle_shear_reinf == 1596.18
-    assert example_beam.req_total_right_shear_reinf == 800.44
+    assert example_beam.req_total_left_shear_reinf == 0
+    assert example_beam.req_total_middle_shear_reinf == 0
+    assert example_beam.req_total_right_shear_reinf == 0
 
 
 def test_shear_legs(example_beam: Beam):
@@ -183,8 +183,8 @@ def test_get_shear_string(example_beam: Beam):
     example_beam.get_total_shear_req()
     example_beam.get_shear_legs()
     example_beam.get_shear_string()
-    assert example_beam.shear_left_string == "2L-T12@100"
-    assert example_beam.shear_middle_string == "2L-T12@100"
+    assert example_beam.shear_left_string == "2L-T12@250"
+    assert example_beam.shear_middle_string == "2L-T12@250"
     assert example_beam.shear_right_string == "2L-T12@250"
 
 
@@ -198,8 +198,8 @@ def test_shear_area(example_beam: Beam):
     example_beam.get_total_shear_req()
     example_beam.get_shear_legs()
     example_beam.get_shear_area()
-    assert example_beam.shear_left_area == 2260
-    assert example_beam.shear_middle_area == 2260
+    assert example_beam.shear_left_area == 904
+    assert example_beam.shear_middle_area == 904
     assert example_beam.shear_right_area == 904
 
 
@@ -297,9 +297,9 @@ def test_index_for_shear_reinf(example_beam: Beam):
     example_beam.get_shear_string()
     example_beam.get_shear_area()
     example_beam.get_index_for_shear_reinf()
-    assert example_beam.selected_shear_left_string == "2L-T12@100"
-    assert example_beam.selected_shear_middle_string == "2L-T12@100"
-    assert example_beam.selected_shear_right_string == "2L-T12@100"
+    assert example_beam.selected_shear_left_string == "2L-T12@250"
+    assert example_beam.selected_shear_middle_string == "2L-T12@250"
+    assert example_beam.selected_shear_right_string == "2L-T12@250"
 
 
 def test_min_shear_long_spacing(example_beam: Beam):

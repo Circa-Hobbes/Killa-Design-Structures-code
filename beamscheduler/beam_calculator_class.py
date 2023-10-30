@@ -806,7 +806,10 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.side_face_middle_string,
             self.side_face_right_string,
         ]
-        if "Rebar needs to be increased or re-assessed" not in side_reinf_string_list:
+        if "Not needed" in side_reinf_area_list:
+            self.selected_side_face_reinforcement_area = 0
+            self.selected_side_face_reinforcement_string = "Not needed"
+        elif "Rebar needs to be increased or re-assessed" not in side_reinf_string_list:
             max_side_reinf_index, max_area = max(
                 enumerate(side_reinf_area_list), key=lambda x: x[1]  # type: ignore
             )
@@ -924,6 +927,8 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
     def modify_shear_reinf(self):
         """This method assesses whether the longitudinal shear spacing provided is greater than the codal maximum.
         If it is, than the spacing provided is replaced by the codal maximum both in string and area.
+        Note that only the left and right is considered as ACI 318-19 18.4.2.4 considers only both ends of beam,
+        not whole beam.
         """
         shear_dia_list = [12, 16, 20, 25]
         target = [
