@@ -88,7 +88,7 @@ def test_top_flex_rebar_string(example_beam: Beam):
     example_beam.get_top_flex_rebar_string()
     assert example_beam.flex_top_left_rebar_string == "3T16"
     assert example_beam.flex_top_middle_rebar_string == "3T16"
-    assert example_beam.flex_top_middle_rebar_string == "3T16"
+    assert example_beam.flex_top_right_rebar_string == "3T16"
 
 
 def test_bot_flex_rebar_string(example_beam: Beam):
@@ -103,7 +103,7 @@ def test_bot_flex_rebar_string(example_beam: Beam):
     example_beam.get_bot_flex_rebar_string()
     assert example_beam.flex_bot_left_rebar_string == "3T16"
     assert example_beam.flex_bot_middle_rebar_string == "3T16"
-    assert example_beam.flex_bot_middle_rebar_string == "3T16"
+    assert example_beam.flex_bot_right_rebar_string == "3T16"
 
 
 def test_top_flex_rebar_area(example_beam: Beam):
@@ -118,7 +118,7 @@ def test_top_flex_rebar_area(example_beam: Beam):
     example_beam.get_top_flex_rebar_area()
     assert example_beam.flex_top_left_rebar_area > 441 or example_beam.flex_top_left_rebar_area == 603  # type: ignore
     assert example_beam.flex_top_middle_rebar_area > 441 or example_beam.flex_top_left_rebar_area == 603  # type: ignore
-    assert example_beam.flex_top_middle_rebar_area > 441 or example_beam.flex_top_left_rebar_area == 603  # type: ignore
+    assert example_beam.flex_top_right_rebar_area > 441 or example_beam.flex_top_left_rebar_area == 603  # type: ignore
 
 
 def test_bot_flex_rebar_area(example_beam: Beam):
@@ -133,7 +133,7 @@ def test_bot_flex_rebar_area(example_beam: Beam):
     example_beam.get_bot_flex_rebar_area()
     assert example_beam.flex_bot_left_rebar_area > 441 or example_beam.flex_bot_left_rebar_area == 603  # type: ignore
     assert example_beam.flex_bot_middle_rebar_area > 441 or example_beam.flex_bot_left_rebar_area == 603  # type: ignore
-    assert example_beam.flex_bot_middle_rebar_area > 441 or example_beam.flex_bot_left_rebar_area == 603  # type: ignore
+    assert example_beam.flex_bot_right_rebar_area > 441 or example_beam.flex_bot_left_rebar_area == 603  # type: ignore
 
 
 def test_residual_rebar(example_beam: Beam):
@@ -309,6 +309,7 @@ def test_min_shear_long_spacing(example_beam: Beam):
     Args:
         example_beam (Beam): Refer to example beam function
     """
+    example_beam.get_eff_depth()
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_top_flex_rebar_string()
@@ -319,6 +320,7 @@ def test_min_shear_long_spacing(example_beam: Beam):
     example_beam.get_shear_area()
     example_beam.get_min_shear_long_spacing()
     assert example_beam.min_shear_long_spacing == 100
+    assert example_beam.min_shear_centre_long_spacing == 200
 
 
 def test_modified_shear_reinf(example_beam: Beam):
@@ -328,6 +330,7 @@ def test_modified_shear_reinf(example_beam: Beam):
     Args:
         example_beam (Beam): Refer to example beam function
     """
+    example_beam.get_eff_depth()
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_top_flex_rebar_string()

@@ -249,6 +249,7 @@ if __name__ == "__main__":
     for beam in beam_instances:
         # Get the effective depth by multiplying the depth by 0.8.
         beam.get_eff_depth()
+
         # Get the longitudinal rebar count.
         beam.get_long_count()
 
