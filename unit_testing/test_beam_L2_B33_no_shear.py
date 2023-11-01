@@ -1,5 +1,6 @@
 import pytest
 from beamscheduler.beam_calculator_class import Beam
+from pytest import approx
 
 
 @pytest.fixture
@@ -198,9 +199,9 @@ def test_shear_area(example_beam: Beam):
     example_beam.get_total_shear_req()
     example_beam.get_shear_legs()
     example_beam.get_shear_area()
-    assert example_beam.shear_left_area == 904
-    assert example_beam.shear_middle_area == 904
-    assert example_beam.shear_right_area == 904
+    assert example_beam.shear_left_area == approx(904, 0.001)
+    assert example_beam.shear_middle_area == approx(904, 0.001)
+    assert example_beam.shear_right_area == approx(904, 0.001)
 
 
 def test_side_face_clear_space(example_beam: Beam):
@@ -230,10 +231,14 @@ def test_side_face_string(example_beam: Beam):
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_top_flex_rebar_string()
+    example_beam.get_top_flex_rebar_area()
     example_beam.get_bot_flex_rebar_string()
+    example_beam.get_bot_flex_rebar_area()
+    example_beam.get_residual_rebar()
     example_beam.get_total_shear_req()
     example_beam.get_shear_legs()
     example_beam.get_shear_string()
+    example_beam.get_shear_area()
     example_beam.get_side_face_clear_space()
     example_beam.get_side_face_string()
     assert example_beam.side_face_left_string == "Not needed"
@@ -250,13 +255,17 @@ def test_side_face_area(example_beam: Beam):
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_top_flex_rebar_string()
+    example_beam.get_top_flex_rebar_area()
     example_beam.get_bot_flex_rebar_string()
+    example_beam.get_bot_flex_rebar_area()
+    example_beam.get_residual_rebar()
     example_beam.get_total_shear_req()
     example_beam.get_shear_legs()
     example_beam.get_shear_string()
+    example_beam.get_shear_area()
     example_beam.get_side_face_clear_space()
+    example_beam.get_side_face_string()
     example_beam.get_side_face_area()
-
     assert example_beam.side_face_left_area == "Not needed"
     assert example_beam.side_face_middle_area == "Not needed"
     assert example_beam.side_face_right_area == "Not needed"
@@ -272,11 +281,16 @@ def test_index_for_side_face_reinf(example_beam: Beam):
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_top_flex_rebar_string()
+    example_beam.get_top_flex_rebar_area()
     example_beam.get_bot_flex_rebar_string()
+    example_beam.get_bot_flex_rebar_area()
+    example_beam.get_residual_rebar()
     example_beam.get_total_shear_req()
     example_beam.get_shear_legs()
     example_beam.get_shear_string()
+    example_beam.get_shear_area()
     example_beam.get_side_face_clear_space()
+    example_beam.get_side_face_string()
     example_beam.get_side_face_area()
     example_beam.get_index_for_side_face_reinf()
     assert (
@@ -345,6 +359,6 @@ def test_modified_shear_reinf(example_beam: Beam):
     assert example_beam.shear_middle_string == "2L-T12@200"
     assert example_beam.shear_right_string == "2L-T12@100"
 
-    assert example_beam.shear_left_area == 2260
-    assert example_beam.shear_middle_area == 1130
-    assert example_beam.shear_right_area == 2260
+    assert example_beam.shear_left_area == approx(2261, 0.001)
+    assert example_beam.shear_middle_area == approx(1130, 0.001)
+    assert example_beam.shear_right_area == approx(2261, 0.001)
