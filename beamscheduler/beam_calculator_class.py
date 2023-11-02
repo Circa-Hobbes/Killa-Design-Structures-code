@@ -566,9 +566,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                             Beam.provided_reinforcement(dia)
                         ) * self.req_shear_legs > req and (  # type: ignore
                             1000 / spacing
-                        ) * (
-                            Beam.provided_reinforcement(dia)
-                        ) * 2 > tor_req:  # type: ignore
+                        ) * (Beam.provided_reinforcement(dia)) * 2 > tor_req:  # type: ignore
                             target[index] = f"{self.req_shear_legs}L-T{dia}@{spacing}"
                             found = True
                             if index == 0:
@@ -603,7 +601,11 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     if found:
                         break
                     for spacing in shear_spacing_list:
-                        if (1000 / spacing) * Beam.provided_reinforcement(dia) * self.req_shear_legs > req and (1000 / spacing) * Beam.provided_reinforcement(dia) * 2 > tor_req:  # type: ignore
+                        if (1000 / spacing) * Beam.provided_reinforcement(
+                            dia
+                        ) * self.req_shear_legs > req and (
+                            1000 / spacing
+                        ) * Beam.provided_reinforcement(dia) * 2 > tor_req:  # type: ignore
                             target[index] = (
                                 (1000 / spacing)
                                 * Beam.provided_reinforcement(dia)
@@ -687,7 +689,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.right_residual_rebar,
         ]
         if None not in combined_residual:
-            target_torsion = [a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)]  # type: ignore
+            target_torsion = [
+                a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)
+            ]  # type: ignore
             if (
                 self.neg_flex_combo == "False"
                 and self.pos_flex_combo == "False"
@@ -733,7 +737,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.right_residual_rebar,
         ]
         if None not in combined_residual:
-            target_torsion = [a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)]  # type: ignore
+            target_torsion = [
+                a - b for a, b in zip(self.req_flex_torsion_reinf, combined_residual)
+            ]  # type: ignore
             if (
                 self.neg_flex_combo == "False"
                 and self.pos_flex_combo == "False"
@@ -755,7 +761,9 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                                 ):
                                     target_torsion[index] = (
                                         np.floor(
-                                            (self.side_face_clear_space / spacing)  # type: ignore
+                                            (
+                                                self.side_face_clear_space / spacing  # type: ignore
+                                            )
                                         )
                                         * 2
                                         * Beam.provided_reinforcement(dia)
@@ -794,7 +802,8 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.selected_side_face_reinforcement_string = "Not needed"
         elif "Rebar needs to be increased or re-assessed" not in side_reinf_string_list:
             max_side_reinf_index, max_area = max(
-                enumerate(side_reinf_area_list), key=lambda x: x[1]  # type: ignore
+                enumerate(side_reinf_area_list),
+                key=lambda x: x[1],  # type: ignore
             )
             self.selected_side_face_reinforcement_area = side_reinf_area_list[
                 max_side_reinf_index
@@ -825,7 +834,8 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
             self.shear_right_string,
         ]
         max_shear_reinf_index, max_area = max(
-            enumerate(shear_reinf_area_list), key=lambda x: x[1]  # type: ignore
+            enumerate(shear_reinf_area_list),
+            key=lambda x: x[1],  # type: ignore
         )
         if shear_reinf_area_list[1] > shear_reinf_area_list[max_shear_reinf_index]:
             self.selected_shear_left_area = shear_reinf_area_list[1]
@@ -969,7 +979,15 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     for dia in shear_dia_list:
                         if found:
                             break
-                        if ((1000 / self.min_shear_long_spacing) * Beam.provided_reinforcement(dia) * self.req_shear_legs) > req and ((1000 / self.min_shear_long_spacing) * Beam.provided_reinforcement(dia) * 2) > tor_req:  # type: ignore
+                        if (
+                            (1000 / self.min_shear_long_spacing)
+                            * Beam.provided_reinforcement(dia)
+                            * self.req_shear_legs
+                        ) > req and (
+                            (1000 / self.min_shear_long_spacing)
+                            * Beam.provided_reinforcement(dia)
+                            * 2
+                        ) > tor_req:  # type: ignore
                             paired_values.append(
                                 [
                                     (1000 / self.min_shear_long_spacing)
@@ -995,7 +1013,15 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                 for dia in shear_dia_list:
                     if found:
                         break
-                    if ((1000 / self.min_shear_centre_long_spacing) * Beam.provided_reinforcement(dia) * self.req_shear_legs) > self.req_total_middle_shear_reinf and ((1000 / self.min_shear_centre_long_spacing) * Beam.provided_reinforcement(dia) * 2) > self.req_torsion_reinf[1]:  # type: ignore
+                    if (
+                        (1000 / self.min_shear_centre_long_spacing)
+                        * Beam.provided_reinforcement(dia)
+                        * self.req_shear_legs
+                    ) > self.req_total_middle_shear_reinf and (
+                        (1000 / self.min_shear_centre_long_spacing)
+                        * Beam.provided_reinforcement(dia)
+                        * 2
+                    ) > self.req_torsion_reinf[1]:  # type: ignore
                         self.shear_middle_area = (
                             (1000 / self.min_shear_centre_long_spacing)
                             * Beam.provided_reinforcement(dia)

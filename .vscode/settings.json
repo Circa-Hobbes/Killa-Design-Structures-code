@@ -1,7 +1,7 @@
 {
     "python.analysis.typeCheckingMode": "basic",
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "python.formatting.provider": "none",
     "python.testing.pytestArgs": [
@@ -12,5 +12,7 @@
     "python.analysis.extraPaths": [
         "./V2_kld beam reinf code",
         "./V2_kld beam reinf code"
-    ]
+    ],
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "explorer.compactFolders": false
 }
