@@ -158,7 +158,7 @@ Provided Right Side Face Reinforcement: {self.side_face_right_string} / {self.si
 Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_string} / {self.selected_side_face_reinforcement_area} mm^2"""
 
     @staticmethod
-    def get_width(width):
+    def get_width(width: str) -> int:
         """This function cleans and retrieves the relevant width of the beam.
 
         Args:
@@ -166,15 +166,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         """
         width_list = list(width)
         width_list = [el.lower() for el in width_list]
-        excluded_values = [
-            "p",
-            "t",
-            "b",
-            "-",
-            "_",
-            "c",
-            "/",
-        ]
+        excluded_values = ["p", "t", "b", "-", "_", "c", "/", "s", "w"]
         v1_width_list = [ex for ex in width_list if ex not in excluded_values]
         index_list = v1_width_list.index("x")
         v2_width_list = v1_width_list[:index_list]
@@ -182,7 +174,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         return int(true_width)
 
     @staticmethod
-    def get_depth(depth):
+    def get_depth(depth: str) -> int:
         """This function cleans and retrives the relevant depth of the beam.
 
         Args:
@@ -190,7 +182,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         """
         depth_list = list(depth)
         depth_list = [el.lower() for el in depth_list]
-        excluded_values = ["p", "t", "b", "-", "_", "c", "/"]
+        excluded_values = ["p", "t", "b", "-", "_", "c", "/", "s", "w"]
         v1_depth_list = [ex for ex in depth_list if ex not in excluded_values]
         index_list = v1_depth_list.index("x")
         v2_depth_list = v1_depth_list[1 + index_list : -4]
@@ -198,7 +190,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         return int(true_depth)
 
     @staticmethod
-    def check_combo(combo_list):
+    def check_combo(combo_list: list) -> str:
         """This function checks if any of the flexural combos in the list is overstressed.
 
         Args:
@@ -773,9 +765,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                 else:
                     target_torsion = ["Not needed"] * len(target_torsion)
             else:
-                target_torsion = ["Overstressed. Please reassess."] * len(
-                    target_torsion
-                )
+                target_torsion = ["Overstressed. Please reassess"] * len(target_torsion)
         else:
             target_torsion = ["Overstressed. Please reassess"] * len(combined_residual)
         self.side_face_left_area = target_torsion[0]
@@ -800,7 +790,7 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
         if "Not needed" in side_reinf_area_list:
             self.selected_side_face_reinforcement_area = 0
             self.selected_side_face_reinforcement_string = "Not needed"
-        elif "Rebar needs to be increased or re-assessed" not in side_reinf_string_list:
+        elif "Overstressed. Please reassess" not in side_reinf_string_list:
             max_side_reinf_index, max_area = max(
                 enumerate(side_reinf_area_list),
                 key=lambda x: x[1],  # type: ignore
