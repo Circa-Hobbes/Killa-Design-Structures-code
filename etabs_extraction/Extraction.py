@@ -31,7 +31,7 @@ class Extraction:
         """
         # Create API helper object.
         helper = comtypes.client.CreateObject("ETABSv1.Helper")
-        helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)  # type: ignore
+        helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
 
         try:
             # Get the current ETABS instance.
@@ -86,7 +86,9 @@ class Extraction:
             SapModel (object): The ETABS SapModel object.
         """
         # Grab the story definitions and the tower and base story definitions tables.
-        story_definition_table = SapModel.DatabaseTables.GetTableForDisplayArray("Story Definitions", GroupName="")  # type: ignore
+        story_definition_table = SapModel.DatabaseTables.GetTableForDisplayArray(
+            "Story Definitions", GroupName=""
+        )  # type: ignore
         baseStory_table = SapModel.DatabaseTables.GetTableForDisplayArray(  # type: ignore
             "Tower and Base Story Definitions", GroupName=""
         )
@@ -142,14 +144,17 @@ class Extraction:
 
         # Loop through the dataframe and sum the story heights to get the total building elevation
         for i in reversed(range(1, len(storyDefinitions_df))):
-            storyDefinitions_df.loc[i - 1, "Elevation (m)"] = storyDefinitions_df.loc[i, "Elevation (m)"] + storyDefinitions_df.loc[i - 1, "Story Height (m)"]  # type: ignore
+            storyDefinitions_df.loc[i - 1, "Elevation (m)"] = (
+                storyDefinitions_df.loc[i, "Elevation (m)"]
+                + storyDefinitions_df.loc[i - 1, "Story Height (m)"]
+            )  # type: ignore
 
         # Assign storyDefinitions table to attribute
         self.extracts["story_heights"] = storyDefinitions_df
 
     def get_filtered_list(self):
         """This method grabs the combo_list inputted by the user and filters it so no None values exist."""
-        self.filtered_combo_list = [i for i in self.combo_list if i != None]
+        self.filtered_combo_list = [i for i in self.combo_list if i is not None]
 
     def calculate_overall_wind_displacement(self, SapModel: object):
         for combo in self.filtered_combo_list:  # type: ignore
@@ -162,7 +167,11 @@ class Extraction:
                     [combo[1]]
                 )
                 # Grab the diaphragm center of mass displacements table.
-                mass_displacement_table = SapModel.DatabaseTables.GetTableForDisplayArray("Diaphragm Center Of Mass Displacements", GroupName="")  # type: ignore
+                mass_displacement_table = (
+                    SapModel.DatabaseTables.GetTableForDisplayArray(
+                        "Diaphragm Center Of Mass Displacements", GroupName=""
+                    )
+                )  # type: ignore
 
                 # Extract the column headings and number of rows from the table. This needs to be done as the data is currently an array.
                 cols = mass_displacement_table[2]
@@ -257,30 +266,22 @@ class Extraction:
                     "X Direction Displacement (mm)"
                 ] = overall_max_windDisplacement_df[
                     "X Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
                 overall_max_windDisplacement_df[
                     "Y Direction Displacement (mm)"
                 ] = overall_max_windDisplacement_df[
                     "Y Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
                 overall_min_windDisplacement_df[
                     "X Direction Displacement (mm)"
                 ] = overall_min_windDisplacement_df[
                     "X Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
                 overall_min_windDisplacement_df[
                     "Y Direction Displacement (mm)"
                 ] = overall_min_windDisplacement_df[
                     "Y Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
 
                 # Take minimum values and make absolute to enable plotting.
                 overall_min_windDisplacement_df[
@@ -327,7 +328,11 @@ class Extraction:
                     Combo=1,
                 )
                 # Grab the diaphragm center of mass displacements table.
-                mass_displacement_table = SapModel.DatabaseTables.GetTableForDisplayArray("Diaphragm Center Of Mass Displacements", GroupName="")  # type: ignore
+                mass_displacement_table = (
+                    SapModel.DatabaseTables.GetTableForDisplayArray(
+                        "Diaphragm Center Of Mass Displacements", GroupName=""
+                    )
+                )  # type: ignore
 
                 # Extract the column headings and number of rows from the table. This needs to be done as the data is currently an array.
                 cols = mass_displacement_table[2]
@@ -424,30 +429,22 @@ class Extraction:
                     "X Direction Displacement (mm)"
                 ] = overall_max_windDisplacement_df[
                     "X Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
                 overall_max_windDisplacement_df[
                     "Y Direction Displacement (mm)"
                 ] = overall_max_windDisplacement_df[
                     "Y Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
                 overall_min_windDisplacement_df[
                     "X Direction Displacement (mm)"
                 ] = overall_min_windDisplacement_df[
                     "X Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
                 overall_min_windDisplacement_df[
                     "Y Direction Displacement (mm)"
                 ] = overall_min_windDisplacement_df[
                     "Y Direction Displacement (mm)"
-                ].astype(
-                    float
-                )
+                ].astype(float)
 
                 # Take minimum values and make absolute to enable plotting.
                 overall_min_windDisplacement_df[

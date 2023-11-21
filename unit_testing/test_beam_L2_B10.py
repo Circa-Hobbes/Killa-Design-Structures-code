@@ -148,9 +148,15 @@ def test_residual_rebar(example_beam: Beam):
     example_beam.get_top_flex_rebar_area()
     example_beam.get_bot_flex_rebar_area()
     example_beam.get_residual_rebar()
-    assert example_beam.left_residual_rebar == (example_beam.flex_top_left_rebar_area - 1457) + (example_beam.flex_bot_left_rebar_area - 1457)  # type: ignore
-    assert example_beam.middle_residual_rebar == (example_beam.flex_top_middle_rebar_area - 1457) + (example_beam.flex_bot_middle_rebar_area - 1457)  # type: ignore
-    assert example_beam.right_residual_rebar == (example_beam.flex_top_right_rebar_area - 1457) + (example_beam.flex_bot_right_rebar_area - 1457)  # type: ignore
+    assert example_beam.left_residual_rebar == (
+        example_beam.flex_top_left_rebar_area - 1457
+    ) + (example_beam.flex_bot_left_rebar_area - 1457)  # type: ignore
+    assert example_beam.middle_residual_rebar == (
+        example_beam.flex_top_middle_rebar_area - 1457
+    ) + (example_beam.flex_bot_middle_rebar_area - 1457)  # type: ignore
+    assert example_beam.right_residual_rebar == (
+        example_beam.flex_top_right_rebar_area - 1457
+    ) + (example_beam.flex_bot_right_rebar_area - 1457)  # type: ignore
 
 
 def test_total_shear_req(example_beam: Beam):
