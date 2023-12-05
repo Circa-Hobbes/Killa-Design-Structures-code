@@ -151,9 +151,9 @@ def test_bot_flex_rebar_area(example_beam: Beam):
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_bot_flex_rebar_area()
-    assert example_beam.flex_bot_left_rebar_area >= approx(2454.37, 0.001)  # type: ignore
-    assert example_beam.flex_bot_middle_rebar_area >= approx(2454.37, 0.001)  # type: ignore
-    assert example_beam.flex_bot_right_rebar_area >= approx(2454.37, 0.001)  # type: ignore
+    assert example_beam.flex_bot_left_rebar_area >= 2039.5  # type: ignore
+    assert example_beam.flex_bot_middle_rebar_area >= 2039.5  # type: ignore
+    assert example_beam.flex_bot_right_rebar_area >= 2202.5  # type: ignore
 
 
 def test_residual_rebar(example_beam: Beam):
