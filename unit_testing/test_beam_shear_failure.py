@@ -13,7 +13,8 @@ def example_beam() -> Beam:
         object: example beam to utilise in tests.
     """
     example_beam = Beam(
-        id=None,
+        story="P2",
+        id="B12",
         width=600,
         depth=600,
         pos_flex_combo="False",
@@ -27,6 +28,24 @@ def example_beam() -> Beam:
         req_torsion_reinf=[694.6, 514.61, 1095.02],
     )
     return example_beam
+
+
+def test_story(example_beam: Beam):
+    """This test checks if the story is correctly obtained.
+
+    Args:
+        example_beam (Beam): Refer to example beam function
+    """
+    assert example_beam.story == "P2"
+
+
+def test_id(example_beam: Beam):
+    """This test checks if the id is correctly obtained.
+
+    Args:
+        example_beam (Beam): Refer to example beam function
+    """
+    assert example_beam.id == "B12"
 
 
 def test_eff_depth(example_beam: Beam):

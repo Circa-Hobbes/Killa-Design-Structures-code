@@ -13,7 +13,8 @@ def example_beam() -> Beam:
         object: example beam to utilise in tests.
     """
     example_beam = Beam(
-        id=None,
+        story="P2",
+        id="B686",
         width=400,
         depth=800,
         pos_flex_combo="False",
@@ -27,6 +28,24 @@ def example_beam() -> Beam:
         req_torsion_reinf=[332.8, 260.03, 303.69],
     )
     return example_beam
+
+
+def test_story(example_beam: Beam):
+    """This test checks if the story is correctly obtained.
+
+    Args:
+        example_beam (Beam): Refer to example beam function
+    """
+    assert example_beam.story == "P2"
+
+
+def test_id(example_beam: Beam):
+    """This test checks if the id is correctly obtained.
+
+    Args:
+        example_beam (Beam): Refer to example beam function
+    """
+    assert example_beam.id == "B686"
 
 
 def test_eff_depth(example_beam: Beam):
@@ -148,9 +167,15 @@ def test_residual_rebar(example_beam: Beam):
     example_beam.get_top_flex_rebar_area()
     example_beam.get_bot_flex_rebar_area()
     example_beam.get_residual_rebar()
-    assert example_beam.left_residual_rebar == (example_beam.flex_top_left_rebar_area - 1661) + (example_beam.flex_bot_left_rebar_area - 989)  # type: ignore
-    assert example_beam.middle_residual_rebar == (example_beam.flex_top_middle_rebar_area - 989) + (example_beam.flex_bot_middle_rebar_area - 1076)  # type: ignore
-    assert example_beam.right_residual_rebar == (example_beam.flex_top_right_rebar_area - 2274) + (example_beam.flex_bot_right_rebar_area - 1156)  # type: ignore
+    assert example_beam.left_residual_rebar == (
+        example_beam.flex_top_left_rebar_area - 1661
+    ) + (example_beam.flex_bot_left_rebar_area - 989)  # type: ignore
+    assert example_beam.middle_residual_rebar == (
+        example_beam.flex_top_middle_rebar_area - 989
+    ) + (example_beam.flex_bot_middle_rebar_area - 1076)  # type: ignore
+    assert example_beam.right_residual_rebar == (
+        example_beam.flex_top_right_rebar_area - 2274
+    ) + (example_beam.flex_bot_right_rebar_area - 1156)  # type: ignore
 
 
 def test_total_shear_req(example_beam: Beam):
