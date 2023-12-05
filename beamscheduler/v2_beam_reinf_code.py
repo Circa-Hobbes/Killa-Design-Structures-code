@@ -9,6 +9,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 # Create all instances of Beam class.
 def create_instance(
+    story,
     id,
     width,
     depth,
@@ -23,6 +24,7 @@ def create_instance(
     req_torsion_reinf,
 ):
     beam = Beam(
+        story,
         id,
         width,
         depth,
@@ -65,6 +67,11 @@ initial_shear_df = initial_shear_df.reset_index(drop=True)
 
 # Begin manipulation and cleaning of dataframe
 if __name__ == "__main__":
+    # Slice through the flexural df and get the story identifier.
+    stories = initial_flexural_df[
+        "TABLE:  Concrete Beam Flexure Envelope - ACI 318-19"
+    ].iloc[::3]
+
     # Slice through the flexural df and get the etabs id.
     e_ids = initial_flexural_df["Unnamed: 1"].iloc[::3]
 
@@ -216,6 +223,7 @@ if __name__ == "__main__":
     # Call create_instance function and create instances of all beams.
     beam_instances = [
         create_instance(
+            stories,
             e_id,
             width,
             depth,
@@ -229,7 +237,8 @@ if __name__ == "__main__":
             req_shear_reinf,
             req_torsion_reinf,
         )
-        for e_id, width, depth, pos_flex_combo, neg_flex_combo, req_top_flex_reinf, req_bot_flex_reinf, req_flex_torsion_reinf, shear_combo, torsion_combo, req_shear_reinf, req_torsion_reinf in zip(
+        for stories, e_id, width, depth, pos_flex_combo, neg_flex_combo, req_top_flex_reinf, req_bot_flex_reinf, req_flex_torsion_reinf, shear_combo, torsion_combo, req_shear_reinf, req_torsion_reinf in zip(
+            stories,
             e_ids,
             beam_widths,
             beam_depths,
@@ -292,6 +301,8 @@ if __name__ == "__main__":
 
         # Grab the index of the side face reinforcement with the highest area.
         beam.get_index_for_side_face_reinf()
+        if beam.story == "L39" and beam.id == "B6":
+            print(beam)
 
 # Create dataframe to fill data with.
 columns = pd.MultiIndex.from_tuples(
@@ -314,15 +325,9 @@ columns = pd.MultiIndex.from_tuples(
 )
 beam_schedule_df = pd.DataFrame(columns=columns)
 
-# Apply the storey data to the storey column in the beam schedule dataframe.
-beam_schedule_df.loc[:, "Storey"] = (
-    initial_flexural_df["TABLE:  Concrete Beam Flexure Envelope - ACI 318-19"]
-    .iloc[::3]
-    .values
-)
-
 # Map the relevant beam attributes to the beam schedule dataframe columns:
 beam_mapping = {
+    "story": ("Storey", ""),
     "id": ("Etabs ID", ""),
     "width": ("Dimensions", "Width (mm)"),
     "depth": ("Dimensions", "Depth (mm)"),
@@ -341,7 +346,10 @@ beam_mapping = {
 # Loop through all the beam instances and populate the beam schedule dataframe with relevant information.
 for idx, beam in enumerate(beam_instances):  # type: ignore
     for attr, col in beam_mapping.items():
-        beam_schedule_df.loc[idx, col] = getattr(beam, attr)
+        value = getattr(beam, attr)
+        if isinstance(value, str):
+            beam_schedule_df[col] = beam_schedule_df[col].astype(object)
+        beam_schedule_df.loc[idx, col] = value
 
 
 # Create the relevant functions to export the excel file
@@ -356,11 +364,11 @@ def export_file(beam_schedule_df):
     beam_schedule_df.to_excel(writer, sheet_name="Beam Reinforcement Schedule")
 
     # Group by the 'Storey' column
-    grouped = beam_schedule_df.groupby("Storey")
+    grouped = beam_schedule_df.groupby("Storey", sort=False)
 
     # Iterate through the groups and write to separate sheets
     for name, group in grouped:
-        sheet_name = f"Storey {name}"
+        sheet_name = f"{name}"
         group.to_excel(writer, sheet_name=sheet_name)
 
     # Save the Excel file

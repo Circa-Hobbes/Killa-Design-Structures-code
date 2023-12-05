@@ -8,6 +8,7 @@ class Beam:
 
     def __init__(
         self,
+        story,
         id,
         width,
         depth,
@@ -24,6 +25,7 @@ class Beam:
         """Begin by initializing attributes that define the makeup of a reinforced
         concrete beam.
         """
+        self.story = story
         self.id = id
         self.width = width
         self.depth = depth
@@ -102,7 +104,8 @@ class Beam:
         Returns:
             _type_: A string of the attributes of a beam.
         """
-        return f"""ETABS Beam ID: {self.id}
+        return f"""Story: {self.story}
+ETABS Beam ID: {self.id}
 
 Width: {self.width} mm 
 Depth: {self.depth} mm
@@ -136,6 +139,7 @@ Right Residual Rebar: {self.right_residual_rebar} mm^2
 
 Required Shear Legs: {self.req_shear_legs}
 Minimum Shear Longitudinal Spacing: {self.min_shear_long_spacing} mm
+Minimum Shear Centre Longitudinal Spacing: {self.min_shear_centre_long_spacing} mm
 
 Required Total Left Shear Reinforcement: {self.req_total_left_shear_reinf}
 Required Total Middle Shear Reinforcement: {self.req_total_middle_shear_reinf}
@@ -902,30 +906,30 @@ Selected Side Face Reinforcement is: {self.selected_side_face_reinforcement_stri
                     300,
                 ]
             )
-            if min_shear_long_spacing > 200 and min_shear_long_spacing < 250:
+            if min_shear_long_spacing >= 200 and min_shear_long_spacing < 250:
                 min_shear_long_spacing = 200
-            elif min_shear_long_spacing > 150 and min_shear_long_spacing < 200:
+            elif min_shear_long_spacing >= 150 and min_shear_long_spacing < 200:
                 min_shear_long_spacing = 150
-            elif min_shear_long_spacing > 125 and min_shear_long_spacing < 150:
+            elif min_shear_long_spacing >= 125 and min_shear_long_spacing < 150:
                 min_shear_long_spacing = 125
             elif min_shear_long_spacing < 125:
                 min_shear_long_spacing = 100
 
             self.min_shear_long_spacing = min_shear_long_spacing
 
-            self.min_shear_centre_long_spacing = int(min([(self.eff_depth / 2), 250]))
+            self.min_shear_centre_long_spacing = min([(self.eff_depth / 2), 250])
             if (
-                self.min_shear_centre_long_spacing > 200
+                self.min_shear_centre_long_spacing >= 200
                 and self.min_shear_centre_long_spacing < 250
             ):
                 self.min_shear_centre_long_spacing = 200
             elif (
-                self.min_shear_centre_long_spacing > 150
+                self.min_shear_centre_long_spacing >= 150
                 and self.min_shear_centre_long_spacing < 200
             ):
                 self.min_shear_centre_long_spacing = 150
             elif (
-                self.min_shear_centre_long_spacing > 125
+                self.min_shear_centre_long_spacing >= 125
                 and self.min_shear_centre_long_spacing < 150
             ):
                 self.min_shear_centre_long_spacing = 125

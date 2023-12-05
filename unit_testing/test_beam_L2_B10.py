@@ -102,9 +102,9 @@ def test_bot_flex_rebar_string(example_beam: Beam):
     example_beam.get_long_count()
     example_beam.flex_torsion_splitting()
     example_beam.get_bot_flex_rebar_string()
-    assert example_beam.flex_bot_left_rebar_string == "3T20"
-    assert example_beam.flex_bot_middle_rebar_string == "3T20 + 3T16"
-    assert example_beam.flex_bot_right_rebar_string == "3T20"
+    assert example_beam.flex_bot_left_rebar_string == "3T25"
+    assert example_beam.flex_bot_middle_rebar_string == "3T25"
+    assert example_beam.flex_bot_right_rebar_string == "3T25"
 
 
 def test_top_flex_rebar_area(example_beam: Beam):
